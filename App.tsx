@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { accelerometer, gyroscope, setUpdateIntervalForType, SensorTypes } from "react-native-sensors";
 
 const App = () => {
   return (
