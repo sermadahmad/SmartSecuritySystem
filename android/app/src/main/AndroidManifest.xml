@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
       android:name=".MainApplication"
@@ -11,10 +10,6 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">
-      <service 
-        android:name=".DeviceLockService" 
-        android:foregroundServiceType="mediaProjection" />
-
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
