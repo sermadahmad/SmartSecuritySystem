@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, NativeModules } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useEffect, useState } from 'react';
+import { View, Text, NativeEventEmitter, NativeModules } from 'react-native';
 
 const { DeviceLockModule } = NativeModules;
+const deviceLockEmitter = new NativeEventEmitter(DeviceLockModule);
 
-const App = () => {
+export default function App() {
   const [isLocked, setIsLocked] = useState<boolean | null>(null);
 
-  const checkDeviceLock = async () => {
-    try {
-      const locked = await DeviceLockModule.isDeviceLocked();
-      setIsLocked(locked);
-    } catch (error) {
-      console.error('Error checking device lock:', error);
-    }
-  };
+  useEffect(() => {
+    const subscription = deviceLockEmitter.addListener(
+      'onDeviceLockStatusChanged',
+      (status) => {
+        console.log('Lock Status Changed:', status);
+        setIsLocked(status);
+      }
+    );
+
+    return () => subscription.remove(); // Clean up listener
+  }, [isLocked]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Device Locked: {isLocked === null ? "Checking..." : isLocked ? "Yes" : "No"}</Text>
-      <Button title="Check Lock Status" onPress={checkDeviceLock} />
-      <Icon name="123" size={30} color="#900" />
+    <View>
+      <Text>Device Status: {isLocked ? 'Locked' : 'Unlocked'}</Text>
     </View>
   );
-};
-
-export default App;
+}

@@ -7,7 +7,9 @@ import com.facebook.react.uimanager.ViewManager
 
 class DeviceLockPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return listOf(DeviceLockModule(reactContext)) // ✅ Register your module
+        val module = DeviceLockModule(reactContext)
+        module.startMonitoring() // Start lock status monitoring
+        return listOf(module)
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
