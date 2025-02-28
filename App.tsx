@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, NativeModules } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const { DeviceLockModule } = NativeModules;
 
@@ -19,6 +20,7 @@ const App = () => {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Device Locked: {isLocked === null ? "Checking..." : isLocked ? "Yes" : "No"}</Text>
       <Button title="Check Lock Status" onPress={checkDeviceLock} />
+      <Icon name="123" size={30} color="#900" />
     </View>
   );
 };
