@@ -1,27 +1,29 @@
-import { useEffect, useState } from 'react';
-import { View, Text, NativeEventEmitter, NativeModules } from 'react-native';
-
-const { DeviceLockModule } = NativeModules;
-const deviceLockEmitter = new NativeEventEmitter(DeviceLockModule);
+import { View, Text, StyleSheet } from 'react-native';
+import { useDeviceLock } from './customHooks/DeviceLock';
+import useIsStationary from './customHooks/useIsStationary';
 
 export default function App() {
-  const [isLocked, setIsLocked] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const subscription = deviceLockEmitter.addListener(
-      'onDeviceLockStatusChanged',
-      (status) => {
-        console.log('Lock Status Changed:', status);
-        setIsLocked(status);
-      }
-    );
-
-    return () => subscription.remove(); // Clean up listener
-  }, [isLocked]);
+  const isLocked = useDeviceLock(); // Use the custom hook
+  const isStationary = useIsStationary(); // Use the custom hook
+  console.log('isLocked:', isLocked);
+  console.log('isStationary:', isStationary);
 
   return (
-    <View>
-      <Text>Device Status: {isLocked ? 'Locked' : 'Unlocked'}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Device Status: {isLocked ? 'Locked' : 'Unlocked'}</Text>
+      <Text style={styles.title}>Device Motion: {isStationary ? 'Stationary' : 'In Motion'}</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    color: 'white',
+  },
+});
