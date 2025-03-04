@@ -1,9 +1,11 @@
+import { setupAlarmPlayer, startAlarm, stopAlarm } from './utils/alarmPlayer';
 import { View, Text, StyleSheet } from 'react-native';
 import useDeviceLock from './customHooks/DeviceLock';
 import useIsStationary from './customHooks/useIsStationary';
 import React, { useEffect, useRef, useState } from 'react';
 import BackgroundTimer from 'react-native-background-timer';
 import KeepAwake from 'react-native-keep-awake';
+import TrackPlayer from 'react-native-track-player';
 
 export default function App() {
   const isLocked = useDeviceLock() ?? false;
@@ -11,6 +13,16 @@ export default function App() {
   const [securityActivated, setSecurityActivated] = useState(false);
   const securityTimer = useRef<number | null>(null);
   const alarmTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    (async () => {
+        await setupAlarmPlayer();
+    })();
+
+    return () => {
+        stopAlarm(); // Ensure cleanup runs synchronously
+    };
+}, []);
 
   // Start BackgroundTimer on mount and stop on unmount
   useEffect(() => {
@@ -53,8 +65,11 @@ export default function App() {
           alarmTimer.current = BackgroundTimer.setTimeout(() => {
             if (isLocked) {
               console.log('Alarm Triggered!');
+              startAlarm();
+
             } else {
               console.log('Device Unlocked. Alarm Stopped. Clearing Alarm Timer');
+              stopAlarm();
               if (alarmTimer.current) BackgroundTimer.clearTimeout(alarmTimer.current);
               alarmTimer.current = null;
               setSecurityActivated(false);
@@ -65,6 +80,7 @@ export default function App() {
       if(!isLocked){
         setSecurityActivated(false);
         console.log('Device Unlocked. Alarm Stopped. Security Deactivated');
+        stopAlarm();
         // clear security timer
         if (securityTimer.current) {
           console.log('Clearing security timer...');
