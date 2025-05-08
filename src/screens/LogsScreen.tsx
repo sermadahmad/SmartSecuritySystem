@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useSecurity } from '../context/SecurityContext';
+import { useSecurity } from '../context/SecurityProvider';
 
 const LogsScreen = () => {
   const { theme } = useSecurity();

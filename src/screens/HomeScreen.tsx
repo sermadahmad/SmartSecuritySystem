@@ -1,33 +1,39 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useSecurity } from '../context/SecurityContext';
+import { View, SafeAreaView, StyleSheet } from 'react-native';
+import { useSecurity } from '../context/SecurityProvider';
+import colors from '../theme/colors';
+import TitleLogo from '../components/TitleLogo';
 import ThemeToggle from '../components/ThemeToggle';
-import SecurityToggle from '../components/SecurityToggle';
-import LogsDisplay from '../components/LogsDisplay';
+import GreetingMessage from '../components/GreetingMessage';
+import MonitoringToggle from '../components/MonitoringToggle';
+import StatusIndicator from '../components/StatusIndicator';
+import RecentSecurityEvent from '../components/RecentSecurityEvent';
+import LogHistoryButton from '../components/LogHistoryButton';
+
+
 const HomeScreen = () => {
   const { theme } = useSecurity();
-  const isDark = theme === 'dark';
+  const themeColors = colors[theme]; // Get colors based on theme
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-      {/* Theme Toggle */}
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.secondary }]}>
       <ThemeToggle />
-
-      {/* Security Toggle */}
-      <SecurityToggle />
-
-      {/* Logs Display */}
-      <LogsDisplay />
-    </View>
+      <TitleLogo />
+      <GreetingMessage />
+      <MonitoringToggle />
+      <StatusIndicator />
+      <RecentSecurityEvent />
+      <LogHistoryButton />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
 });
 

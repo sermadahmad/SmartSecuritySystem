@@ -5,15 +5,25 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import HomeScreen from '../screens/HomeScreen';
 import LogsScreen from '../screens/LogsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import AboutScreen from '../screens/AboutScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSecurity } from '../context/SecurityContext';
+import { useSecurity } from '../context/SecurityProvider';
+import colors from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+export type RootStackParamList = {
+  Logs: undefined;
+  Home: undefined;
+  Settings: undefined;
+  About: undefined;
+};
+
 const TabNavigator = () => {
   const { theme } = useSecurity();
-  const isDark = theme === 'dark';
+  const themeColors = colors[theme]; // Get theme-specific colors
+
 
   return (
     <Tab.Navigator
@@ -28,23 +38,26 @@ const TabNavigator = () => {
             iconName = focused ? 'clipboard-text' : 'clipboard-text-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'cog' : 'cog-outline';
+          } else if (route.name === 'About') {
+            iconName = focused ? 'information' : 'information-outline';
           }
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: isDark ? '#FFFFFF' : '#007AFF',
-        tabBarInactiveTintColor: isDark ? '#AAAAAA' : 'gray',
+        tabBarActiveTintColor: themeColors.primary,
+        tabBarInactiveTintColor: themeColors.primary,
         tabBarStyle: {
-          backgroundColor: isDark ? '#121212' : 'white',
+          backgroundColor: themeColors.secondary,
           paddingBottom: 5,
           height: 60,
-          borderTopColor: isDark ? '#222' : '#ddd',
+          borderTopColor: themeColors.primary,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Logs" component={LogsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="About" component={AboutScreen} />
     </Tab.Navigator>
   );
 };

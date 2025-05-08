@@ -8,7 +8,7 @@ const SettingsScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-      <Text style={[styles.text, { color: isDark ? '#FFFFFF' : '#000' }]}>Settings Screen - Customize App</Text>
+      <Text style={[styles.text, { color: isDark ? '#FFFFFF' : '#000' }]}>About Screen - Customize App</Text>
     </View>
   );
 };
