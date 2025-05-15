@@ -10,13 +10,16 @@ export default function useDeviceLock() {
   useEffect(() => {
     const subscription = deviceLockEmitter.addListener(
       'onDeviceLockStatusChanged',
-      (status) => {
-        // console.log('Lock Status Changed:', status);
+      (status: boolean) => {
+        console.log('Lock Status Changed:', status);
         setIsLocked(status);
       }
     );
 
-    return () => subscription.remove(); // Clean up listener
+    return () => {
+      subscription.remove(); // Clean up listener
+      console.log('Device Lock Listener Removed');
+    };
   }, []);
 
   return isLocked;

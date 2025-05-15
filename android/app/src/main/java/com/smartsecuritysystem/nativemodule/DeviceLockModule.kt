@@ -15,6 +15,7 @@ class DeviceLockModule(reactContext: ReactApplicationContext) : ReactContextBase
     private val handler = Handler(Looper.getMainLooper())
     private val keyguardManager: KeyguardManager =
         reactContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+    private var previousLockState: Boolean? = null
 
     override fun getName(): String {
         return "DeviceLockModule"
@@ -31,30 +32,40 @@ class DeviceLockModule(reactContext: ReactApplicationContext) : ReactContextBase
     }
 
     private fun sendLockStatusEvent(isLocked: Boolean) {
-        val reactContext = reactApplicationContext
-        reactContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            ?.emit("onDeviceLockStatusChanged", isLocked)
+        try {
+            val reactContext = reactApplicationContext
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("onDeviceLockStatusChanged", isLocked)
+        } catch (e: Exception) {
+            e.printStackTrace() // Log the error
+        }
     }
 
     fun startMonitoring() {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 val isLocked = keyguardManager.isDeviceLocked
-                sendLockStatusEvent(isLocked)
+                if (previousLockState == null || previousLockState != isLocked) {
+                    sendLockStatusEvent(isLocked)
+                    previousLockState = isLocked
+                }
                 handler.postDelayed(this, 2000) // Check every 2 seconds
             }
         }, 2000)
     }
 
-    // ✅ Add these two methods
+    fun stopMonitoring() {
+        handler.removeCallbacksAndMessages(null) // Remove all pending callbacks
+    }
+
     @ReactMethod
     fun addListener(eventName: String) {
-        // Required for event emitter
+        // Required for React Native event emitter. No implementation needed.
     }
 
     @ReactMethod
     fun removeListeners(count: Int) {
-        // Required for event emitter
+        // Required for React Native event emitter. No implementation needed.
     }
 }
