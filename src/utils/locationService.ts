@@ -1,6 +1,11 @@
+// locationService.ts
+// This file provides utility functions for location access. It does NOT use React hooks and should not be a source of 'invalid hook call' errors.
+// If you need to use hooks (like useState, useEffect), do so only inside React components or custom hooks, NOT in utility files like this.
+
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation, { GeolocationResponse } from '@react-native-community/geolocation';
 
+// Requests location permission (Android only)
 async function requestLocationPermission() {
   if (Platform.OS === 'android') {
     const granted = await PermissionsAndroid.request(
@@ -11,7 +16,7 @@ async function requestLocationPermission() {
   return true; // iOS handles this differently
 }
 
-
+// Gets the current location (one-time fetch)
 export async function getCurrentLocation(): Promise<GeolocationResponse | null> {
   const hasPermission = await requestLocationPermission();
   if (!hasPermission) {
@@ -24,7 +29,7 @@ export async function getCurrentLocation(): Promise<GeolocationResponse | null> 
       position => resolve(position),
       error => reject(error),
       {
-        // enableHighAccuracy: true,
+        // enableHighAccuracy: true, // Uncomment if you want high accuracy
         timeout: 150000,
         maximumAge: 100000,
       }
@@ -32,12 +37,12 @@ export async function getCurrentLocation(): Promise<GeolocationResponse | null> 
   });
 }
 
-// Function to create a Google Maps link
+// Function to create a Google Maps link from coordinates
 export function createGoogleMapsLink(latitude: number, longitude: number): string {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
-// New function to fetch location and return Google Maps link
+// Fetches location and returns a Google Maps link (wrapper)
 export async function getGoogleMapsLink(): Promise<string | null> {
   try {
     const location = await getCurrentLocation();
@@ -51,3 +56,5 @@ export async function getGoogleMapsLink(): Promise<string | null> {
     return null;
   }
 }
+
+// NOTE: If you are not using createGoogleMapsLink elsewhere, you may comment it out. For now, it is used by getGoogleMapsLink.

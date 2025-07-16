@@ -9,6 +9,11 @@ import AboutScreen from '../screens/AboutScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSecurity } from '../context/SecurityProvider';
 import colors from '../theme/colors';
+import { requestLocationPermissions } from '../permissions/locationPermission';
+// import { channelConfig } from '../utils/foregroundService';
+// import { useForegroundService } from '../context/ForegroundServiceContext';
+import {  } from 'react-native-permissions';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -65,6 +70,38 @@ const TabNavigator = () => {
 const AppNavigator = () => {
   const { theme } = useSecurity();
   const isDark = theme === 'dark';
+
+
+  // Request location permissions
+  React.useEffect(() => {
+    const requestPermissions = async () => {
+      try {
+        const granted = await requestLocationPermissions();
+        if (!granted) {
+          console.warn('Location permissions not granted');
+        }
+      } catch (error) {
+        console.error('Error requesting location permissions:', error);
+      }
+    };
+
+    requestPermissions();
+  }, []);
+  // // Initialize the foreground service channel
+  // React.useEffect(() => {
+  //   const {foregroundService} = useForegroundService();
+
+  //   const initializeForegroundService = async () => {
+  //     // console.log('foregroundService:', ForegroundService);
+  //     try {
+  //       await foregroundService.createNotificationChannel(channelConfig);
+  //     } catch (error) {
+  //       console.error('Error creating notification channel:', error);
+  //     }
+  //   };
+
+  //   initializeForegroundService();
+  // }, []);
 
   return (
     <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>

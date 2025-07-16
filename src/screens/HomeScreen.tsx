@@ -9,8 +9,9 @@ import MonitoringToggle from '../components/MonitoringToggle';
 import StatusIndicator from '../components/StatusIndicator';
 import RecentSecurityEvent from '../components/RecentSecurityEvent';
 import LogHistoryButton from '../components/LogHistoryButton';
-import { getCurrentLocation, getGoogleMapsLink } from '../utils/locationService';
-
+// import { getCurrentLocation, getGoogleMapsLink } from '../utils/locationService';
+// import { startForegroundService } from '../utils/foregroundService';
+// import { useForegroundService } from '../context/ForegroundServiceContext';
 
 const HomeScreen = () => {
   const { theme } = useSecurity();
@@ -18,16 +19,26 @@ const HomeScreen = () => {
   const [mapsLink, setMapsLink] = React.useState<string | null>(null);
 
 
-  const getLocation = async () => {
-    const mapsLink = await getGoogleMapsLink();
-    if (mapsLink) {
-      console.log('Google Maps Link:', mapsLink);
-      setMapsLink(mapsLink);
-    } else {
-      console.warn('Failed to fetch location');
-      setMapsLink(null);
-    }
-  }
+  // const getLocation = async () => {
+  //   try {
+  //     const {foregroundService} = useForegroundService();
+  //     // Start the foreground service
+  //     await startForegroundService(foregroundService);
+  //     // Get the current location
+  //     const location = await getCurrentLocation();
+  //     if (location) {
+  //       const { latitude, longitude } = location.coords;
+  //       const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  //       setMapsLink(link);
+  //       console.log('Location:', location);
+  //       console.log('Google Maps Link:', link);
+  //     } else {
+  //       console.warn('Location not available');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error getting location:', error);
+  //   }
+  // }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.secondary }]}>
@@ -35,7 +46,7 @@ const HomeScreen = () => {
       <TitleLogo />
       <Button
         title="Get Location"
-        onPress={getLocation}
+        // onPress={getLocation}
         color={themeColors.primary}
       />
       {mapsLink && (
