@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
@@ -10,6 +10,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSecurity } from '../context/SecurityProvider';
 import colors from '../theme/colors';
 import { requestLocationPermissions } from '../permissions/locationPermission';
+import { AppState, AppStateStatus } from 'react-native';
+import PermissionRequiredScreen from '../screens/PermissionRequiredScreen';
 // import { channelConfig } from '../utils/foregroundService';
 // import { useForegroundService } from '../context/ForegroundServiceContext';
 import {  } from 'react-native-permissions';
@@ -67,25 +69,44 @@ const TabNavigator = () => {
   );
 };
 
+
 const AppNavigator = () => {
   const { theme } = useSecurity();
   const isDark = theme === 'dark';
+  const [permissionsGranted, setPermissionsGranted] = useState<boolean | null>(null);
+  const appState = useRef(AppState.currentState);
 
+  // Function to check permissions
+  const checkPermissions = async () => {
+    try {
+      const granted = await requestLocationPermissions();
+      setPermissionsGranted(granted);
+    } catch (error) {
+      setPermissionsGranted(false);
+      console.error('Error requesting location permissions:', error);
+    }
+  };
 
-  // Request location permissions
-  React.useEffect(() => {
-    const requestPermissions = async () => {
-      try {
-        const granted = await requestLocationPermissions();
-        if (!granted) {
-          console.warn('Location permissions not granted');
-        }
-      } catch (error) {
-        console.error('Error requesting location permissions:', error);
+  // Initial check
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  // Re-check permissions when app comes to foreground
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        checkPermissions();
       }
+      appState.current = nextAppState;
     };
-
-    requestPermissions();
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
   }, []);
   // // Initialize the foreground service channel
   // React.useEffect(() => {
@@ -102,6 +123,15 @@ const AppNavigator = () => {
 
   //   initializeForegroundService();
   // }, []);
+  
+  if (permissionsGranted === false) {
+    return <PermissionRequiredScreen />;
+  }
+
+  if (permissionsGranted === null) {
+    // Optionally, show a splash/loading screen while checking permissions
+    return null;
+  }
 
   return (
     <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
