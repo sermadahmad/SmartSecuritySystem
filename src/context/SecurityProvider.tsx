@@ -12,19 +12,25 @@ type SecurityContextType = {
     securityActivated: boolean;
     theme: 'light' | 'dark';
     toggleTheme: () => void;
+    location: string | null;
+    setLocation: (location: string | null) => void;
+
 };
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
 
 export const SecurityProvider = ({ children }: { children: ReactNode }) => {
     const { monitoringEnabled, toggleMonitoring } = usePersistentState();
-    const { securityActivated } = useSecurityLogic(monitoringEnabled);
+    const [location, setLocation] = useState<string | null>(null);
+    const { securityActivated } = useSecurityLogic(monitoringEnabled, setLocation);
     const { theme, toggleTheme } = useTheme();
     // const foregroundService = new ForegroundService();
 
     return (
         // <SecurityContext.Provider value={{foregroundService, monitoringEnabled, toggleMonitoring, securityActivated, theme, toggleTheme }}>
-        <SecurityContext.Provider value={{monitoringEnabled, toggleMonitoring, securityActivated, theme, toggleTheme }}>
+        <SecurityContext.Provider value={{
+            monitoringEnabled, toggleMonitoring, securityActivated, theme, toggleTheme, location, setLocation
+        }}>
             {children}
         </SecurityContext.Provider>
     );

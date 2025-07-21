@@ -3,14 +3,20 @@ import BackgroundTimer from 'react-native-background-timer';
 import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
 import useDeviceLock from '../customHooks/DeviceLock';
 import useIsStationary from '../customHooks/useIsStationary';
+import {  getGoogleMapsLink } from '../utils/locationService';
+import { useForegroundService } from '../context/ForegroundServiceContext';
+import { startForegroundService } from '../utils/foregroundService';
+import { useSecurity } from '../context/SecurityProvider';
 
-export const useSecurityLogic = (monitoringEnabled: boolean) => {
+export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link: string | null) => void) => {
     const isLocked = useDeviceLock() ?? false;
     const isStationary = useIsStationary();
     // const isStationary = true; // For testing purposes, always set to true
     const [securityActivated, setSecurityActivated] = useState(false);
     const securityTimer = useRef<number | null>(null);
     const alarmTimer = useRef<number | null>(null);
+    const foregroundService = useForegroundService();
+    // const { setLocation } = useSecurity(); // This line is removed as per the edit hint
 
     useEffect(() => {
         (async () => {
@@ -61,6 +67,29 @@ export const useSecurityLogic = (monitoringEnabled: boolean) => {
                         if (isLocked) {
                             console.log('Alarm Triggered!');
                             startAlarm();
+
+                            // Start foreground service, get location, then stop service
+                            (async () => {
+                              try {
+                                if (foregroundService) {
+                                  await startForegroundService(foregroundService);
+                                }
+                                const link = await getGoogleMapsLink();
+                                if (link) {
+                                    setLocation(link);
+                                  console.log('Google Maps Link after alarm:', link);
+                                } else {
+                                  console.warn('Location not available after alarm');
+                                }
+                              } catch (error) {
+                                console.error('Error fetching location after alarm:', error);
+                              } finally {
+                                if (foregroundService && foregroundService.stopService) {
+                                  await foregroundService.stopService();
+                                  console.log('Foreground service stopped after alarm');
+                                }
+                              }
+                            })();
                         } else {
                             console.log('Device Unlocked. Alarm Stopped.');
                             stopAlarm();

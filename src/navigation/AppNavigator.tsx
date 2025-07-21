@@ -12,9 +12,9 @@ import colors from '../theme/colors';
 import { requestLocationPermissions } from '../permissions/locationPermission';
 import { AppState, AppStateStatus } from 'react-native';
 import PermissionRequiredScreen from '../screens/PermissionRequiredScreen';
-// import { channelConfig } from '../utils/foregroundService';
-// import { useForegroundService } from '../context/ForegroundServiceContext';
-import {  } from 'react-native-permissions';
+import { channelConfig } from '../utils/foregroundService';
+import { useForegroundService } from '../context/ForegroundServiceContext';
+import { } from 'react-native-permissions';
 
 
 const Tab = createBottomTabNavigator();
@@ -108,21 +108,18 @@ const AppNavigator = () => {
       subscription.remove();
     };
   }, []);
-  // // Initialize the foreground service channel
-  // React.useEffect(() => {
-  //   const {foregroundService} = useForegroundService();
 
-  //   const initializeForegroundService = async () => {
-  //     // console.log('foregroundService:', ForegroundService);
-  //     try {
-  //       await foregroundService.createNotificationChannel(channelConfig);
-  //     } catch (error) {
-  //       console.error('Error creating notification channel:', error);
-  //     }
-  //   };
-
-  //   initializeForegroundService();
-  // }, []);
+  // Initialize the foreground service channel
+  const foregroundService = useForegroundService();
+  useEffect(() => {
+    if (foregroundService && foregroundService.createNotificationChannel) {
+      foregroundService.createNotificationChannel(channelConfig)
+        .then(() => console.log('Notification channel created'))
+        .catch((e: any) => console.error('Failed to create notification channel', e));
+    } else {
+      console.warn('Foreground service is not available or createNotificationChannel is not defined');
+    }
+  }, []);
   
   if (permissionsGranted === false) {
     return <PermissionRequiredScreen />;

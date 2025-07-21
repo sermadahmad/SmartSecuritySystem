@@ -14,14 +14,19 @@ import LogHistoryButton from '../components/LogHistoryButton';
 // import { useForegroundService } from '../context/ForegroundServiceContext';
 
 const HomeScreen = () => {
-  const { theme } = useSecurity();
+  const { theme, location } = useSecurity();
   const themeColors = colors[theme]; // Get colors based on theme
-  const [mapsLink, setMapsLink] = React.useState<string | null>(null);
+  // const [mapsLink, setMapsLink] = React.useState<string | null>(null);
 
+  // const foregroundService = useForegroundService();
+
+  // if (!foregroundService) {
+  //   console.error('ForegroundService is undefined!');
+  //   return;
+  // }
 
   // const getLocation = async () => {
   //   try {
-  //     const {foregroundService} = useForegroundService();
   //     // Start the foreground service
   //     await startForegroundService(foregroundService);
   //     // Get the current location
@@ -44,17 +49,17 @@ const HomeScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.secondary }]}>
       <ThemeToggle />
       <TitleLogo />
-      <Button
+      {/* <Button
         title="Get Location"
-        // onPress={getLocation}
+        onPress={getLocation}
         color={themeColors.primary}
-      />
-      {mapsLink && (
+      /> */}
+      {location && (
         <Button
-          title={mapsLink}
+          title={location}
           onPress={() => {
             // Open the Google Maps link in the default browser
-            Linking.openURL(mapsLink);
+            Linking.openURL(location);
           }}
           color={themeColors.primary}
         />

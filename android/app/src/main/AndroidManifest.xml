@@ -70,5 +70,9 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    <service
+      android:name="com.voximplant.foregroundservice.VIForegroundService"
+      android:exported="false"
+      android:enabled="true" />
   </application>
 </manifest>
