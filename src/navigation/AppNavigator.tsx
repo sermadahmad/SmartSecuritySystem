@@ -9,12 +9,13 @@ import AboutScreen from '../screens/AboutScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSecurity } from '../context/SecurityProvider';
 import colors from '../theme/colors';
-import { requestLocationPermissions } from '../permissions/locationPermission';
+import { requestPermissions } from '../permissions/locationPermission';
 import { AppState, AppStateStatus } from 'react-native';
 import PermissionRequiredScreen from '../screens/PermissionRequiredScreen';
 import { channelConfig } from '../utils/foregroundService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
-import { } from 'react-native-permissions';
+import { PERMISSIONS } from 'react-native-permissions';
+import CapturePhotosScreen from '../screens/CapturePhotosScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -79,7 +80,16 @@ const AppNavigator = () => {
   // Function to check permissions
   const checkPermissions = async () => {
     try {
-      const granted = await requestLocationPermissions();
+      const granted = await requestPermissions(
+        [
+          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+          PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+          PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION,
+          PERMISSIONS.ANDROID.BODY_SENSORS,
+          PERMISSIONS.ANDROID.CAMERA,
+          PERMISSIONS.ANDROID.RECORD_AUDIO,
+        ]
+      );
       setPermissionsGranted(granted);
     } catch (error) {
       setPermissionsGranted(false);
@@ -132,8 +142,9 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName='CapturePhotosScreen' screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={TabNavigator} />
+        <Stack.Screen name="CapturePhotosScreen" component={CapturePhotosScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

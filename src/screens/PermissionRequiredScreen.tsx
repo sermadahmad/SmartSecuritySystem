@@ -8,7 +8,10 @@ const PermissionRequiredScreen = () => (
       This app cannot work without the following permissions:
     </Text>
     <View style={styles.permissionList}>
+      <Text style={styles.permissionItem}>• Body Sensor</Text>
+      <Text style={styles.permissionItem}>• Camera</Text>
       <Text style={styles.permissionItem}>• Location (Precise & Background)</Text>
+      <Text style={styles.permissionItem}>• Microphone</Text>
     </View>
     <Button
       title="Open Settings"
