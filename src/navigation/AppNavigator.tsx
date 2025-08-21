@@ -16,6 +16,7 @@ import { channelConfig } from '../utils/foregroundService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
 import { PERMISSIONS } from 'react-native-permissions';
 import CapturePhotosScreen from '../screens/CapturePhotosScreen';
+import PhotoGalleryScreen from '../screens/PhotoGalleryScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -48,6 +49,8 @@ const TabNavigator = () => {
             iconName = focused ? 'cog' : 'cog-outline';
           } else if (route.name === 'About') {
             iconName = focused ? 'information' : 'information-outline';
+          } else if (route.name === 'PhotoGallery') {
+            iconName = focused ? 'image' : 'image-outline';
           }
 
           return <Icon name={iconName} size={size} color={color} />;
@@ -66,6 +69,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Logs" component={LogsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen name="About" component={AboutScreen} />
+      <Tab.Screen name="PhotoGallery" component={PhotoGalleryScreen} />
     </Tab.Navigator>
   );
 };
@@ -142,9 +146,10 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
-      <Stack.Navigator initialRouteName='CapturePhotosScreen' screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName='Main' screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={TabNavigator} />
         <Stack.Screen name="CapturePhotosScreen" component={CapturePhotosScreen} />
+        <Stack.Screen name="PhotoGallery" component={PhotoGalleryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

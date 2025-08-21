@@ -20,6 +20,8 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
               add(DeviceLockPackage())  // ✅ Add DeviceLockPackage manually
+              add(CameraCapturePackage())  // ✅ Add CameraCapturePackage
+              add(SecurityTriggerPackage())  // ✅ Add SecurityTriggerPackage
             }
 
         override fun getJSMainModuleName(): String = "index"

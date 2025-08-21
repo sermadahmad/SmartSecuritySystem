@@ -6,6 +6,7 @@ import useIsStationary from '../customHooks/useIsStationary';
 import {  getGoogleMapsLink } from '../utils/locationService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
 import { startForegroundService } from '../utils/foregroundService';
+import { captureSecurityPhotos } from '../utils/cameraCapture';
 
 export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link: string | null) => void) => {
     const isLocked = useDeviceLock() ?? false;
@@ -62,33 +63,39 @@ export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link:
             if (!isStationary) {
                 if (!alarmTimer.current) {
                     console.log('Starting alarm timer...');
-                    alarmTimer.current = BackgroundTimer.setTimeout(() => {
+                    alarmTimer.current = BackgroundTimer.setTimeout(async () => {
                         if (isLocked) {
                             console.log('Alarm Triggered!');
                             startAlarm();
 
-                            // Start foreground service, get location, then stop service
-                            (async () => {
-                              try {
+                            // Start foreground service, get location, capture photos, then stop service
+                            try {
                                 if (foregroundService) {
-                                  await startForegroundService(foregroundService);
+                                    await startForegroundService(foregroundService);
                                 }
+                                
+                                // Get location
                                 const link = await getGoogleMapsLink();
                                 if (link) {
                                     setLocation(link);
-                                  console.log('Google Maps Link after alarm:', link);
+                                    console.log('Google Maps Link after alarm:', link);
                                 } else {
-                                  console.warn('Location not available after alarm');
+                                    console.warn('Location not available after alarm');
                                 }
-                              } catch (error) {
-                                console.error('Error fetching location after alarm:', error);
-                              } finally {
+
+                                // Automatically capture security photos
+                                console.log('Starting automatic security photo capture...');
+                                const photoResult = await captureSecurityPhotos();
+                                console.log('Security photos captured:', photoResult);
+                                
+                            } catch (error) {
+                                console.error('Error during security response:', error);
+                            } finally {
                                 if (foregroundService && foregroundService.stopService) {
-                                  await foregroundService.stopService();
-                                  console.log('Foreground service stopped after alarm');
+                                    await foregroundService.stopService();
+                                    console.log('Foreground service stopped after alarm');
                                 }
-                              }
-                            })();
+                            }
                         } else {
                             console.log('Device Unlocked. Alarm Stopped.');
                             stopAlarm();
