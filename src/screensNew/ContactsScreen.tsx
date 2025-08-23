@@ -1,151 +1,63 @@
-import React, { useState, useRef, useEffect } from "react";
-import { StyleSheet, Text, View, ScrollView, StatusBar, Animated, Easing, TouchableOpacity, Dimensions, Image } from 'react-native'
+import React, { useState } from "react";
+import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native'
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { myColors } from '../theme/colors'
 import HomeHeader from '../components/Home/HomeHeader';
-import ShieldButton from '../components/Home/ShieldButton';
-import StatusIndicator from "../components/StatusIndicator";
-import PanicButton from "../components/Home/PanicButton";
-import ContactActionButton from "../components/Contacts/ContactActionButton";
 import ContactCard from '../components/Contacts/ContactCard';
+import AddContactModal from '../components/Contacts/AddContactModal';
 
 const { width, height } = Dimensions.get('window');
-
-// data for contacts
-const contacts = [
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-  {
-    email: 'user@gmail.com',
-    sendLocation: false,
-    setSendLocation: (v: boolean) => { },
-    sendPhotos: false,
-    setSendPhotos: (v: boolean) => { },
-    sendEventDetails: false,
-    setSendEventDetails: (v: boolean) => { },
-    onDelete: () => {
-      // handle delete
-    }
-  },
-];
-
-// const contacts =[];
 
 const ContactsScreen = () => {
   const [sendLocation, setsendLocation] = useState(false);
   const [sendPhotos, setsendPhotos] = useState(false);
   const [sendEventDetails, setsendEventDetails] = useState(false);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newSendLocation, setNewSendLocation] = useState(false);
+  const [newSendPhotos, setNewSendPhotos] = useState(false);
+  const [newSendEventDetails, setNewSendEventDetails] = useState(false);
+
+  type Contact = {
+    email: string;
+    sendLocation: boolean;
+    setSendLocation: (v: boolean) => void;
+    sendPhotos: boolean;
+    setSendPhotos: (v: boolean) => void;
+    sendEventDetails: boolean;
+    setSendEventDetails: (v: boolean) => void;
+    onDelete?: () => void;
+  };
+  
+  const [contacts, setContacts] = useState<Contact[]>([]);
+
   const handleAddContact = () => {
-    // TODO: Add your logic to add a contact
-    console.log("Add Contact pressed");
+    setModalVisible(true);
+  };
+
+  const handleSaveContact = () => {
+    if (!newEmail.trim()) return;
+    setContacts([
+      ...contacts,
+      {
+        email: newEmail,
+        sendLocation: newSendLocation,
+        setSendLocation: setNewSendLocation,
+        sendPhotos: newSendPhotos,
+        setSendPhotos: setNewSendPhotos,
+        sendEventDetails: newSendEventDetails,
+        setSendEventDetails: setNewSendEventDetails,
+        onDelete: () => {
+        },
+      }
+    ]);
+    setModalVisible(false);
+    setNewEmail("");
+    setNewSendLocation(false);
+    setNewSendPhotos(false);
+    setNewSendEventDetails(false);
   };
 
   return (
@@ -159,7 +71,7 @@ const ContactsScreen = () => {
           />
           <View >
             {contacts.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: myColors.secondary, fontSize: 16 }}>
+              <Text style={{ textAlign: 'center', color: myColors.primary, fontSize: 16 }}>
                 No contacts yet.
               </Text>
             ) : (
@@ -167,12 +79,12 @@ const ContactsScreen = () => {
                 <ContactCard
                   key={index}
                   email={contact.email}
-                  sendLocation={sendLocation}
-                  setSendLocation={setsendLocation}
-                  sendPhotos={sendPhotos}
-                  setSendPhotos={setsendPhotos}
-                  sendEventDetails={sendEventDetails}
-                  setSendEventDetails={setsendEventDetails}
+                  sendLocation={contact.sendLocation}
+                  setSendLocation={contact.setSendLocation}
+                  sendPhotos={contact.sendPhotos}
+                  setSendPhotos={contact.setSendPhotos}
+                  sendEventDetails={contact.sendEventDetails}
+                  setSendEventDetails={contact.setSendEventDetails}
                   onDelete={contact.onDelete}
                 />
               ))
@@ -185,6 +97,19 @@ const ContactsScreen = () => {
       }]} onPress={handleAddContact}>
         <Icon name="add" size={28} color={myColors.background} />
       </TouchableOpacity>
+      <AddContactModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveContact}
+        email={newEmail}
+        setEmail={setNewEmail}
+        sendLocation={newSendLocation}
+        setSendLocation={setNewSendLocation}
+        sendPhotos={newSendPhotos}
+        setSendPhotos={setNewSendPhotos}
+        sendEventDetails={newSendEventDetails}
+        setSendEventDetails={setNewSendEventDetails}
+      />
     </SafeAreaView>
   )
 }
@@ -199,18 +124,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingTop: 10,
-  },
-  locationButton: {
-    borderWidth: 1,
-    borderRadius: 20,
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-  },
-  locationButtonText: {
-    fontSize: 8,
-    fontWeight: '500',
-    letterSpacing: 1,
   },
   fab: {
     position: 'absolute',

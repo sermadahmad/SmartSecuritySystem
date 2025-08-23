@@ -40,7 +40,7 @@ const TabNavigator = () => {
 
   return (
     <Tab.Navigator
-    initialRouteName='Contacts'
+    initialRouteName='Events'
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {

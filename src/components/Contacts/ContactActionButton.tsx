@@ -13,8 +13,8 @@ const ContactActionButton: React.FC<ContactActionButtonProps> = ({ active, onPre
     style={[
       styles.button,
       active
-        ? { backgroundColor: myColors.secondary, borderColor: myColors.secondary }
-        : { backgroundColor: myColors.background, borderColor: myColors.primary }
+        ? { backgroundColor: myColors.primary, borderColor: myColors.primary }
+        : { backgroundColor: myColors.background, borderColor: myColors.secondary }
     ]}
     onPress={onPress}
   >
@@ -23,7 +23,7 @@ const ContactActionButton: React.FC<ContactActionButtonProps> = ({ active, onPre
         styles.buttonText,
         active
           ? { color: myColors.background }
-          : { color: myColors.secondary }
+          : { color: myColors.primary }
       ]}
     >
       {label}

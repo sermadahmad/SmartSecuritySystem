@@ -16,6 +16,7 @@ export const myColors = {
   text: "#000000",
   green: '#4CAF50',
   red: "#E53935",
+  modalOverlay: "rgba(0, 0, 0, 0.3)",
 };
 
 

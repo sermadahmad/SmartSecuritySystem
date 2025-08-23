@@ -59,10 +59,10 @@ const HomeScreen = () => {
               onPress={() => setIsAlarmActive(!isAlarmActive)}
               style={[
                 styles.alarmButton,
-                { backgroundColor: myColors.background, borderColor: myColors.primary }
+                { backgroundColor: myColors.background, borderColor: myColors.secondary }
               ]}
             >
-              <Text style={[styles.alarmButtonText, { color: myColors.secondary }]}>Test Alarm</Text>
+              <Text style={[styles.alarmButtonText, { color: myColors.primary }]}>Test Alarm</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.spacer} />

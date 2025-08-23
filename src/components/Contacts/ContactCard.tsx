@@ -26,12 +26,12 @@ const ContactCard: React.FC<ContactCardProps> = ({
     onDelete,
 }) => (
     <View style={[styles.card, {
-        borderColor: myColors.secondary, backgroundColor: myColors.background,
+        borderColor: myColors.primary, backgroundColor: myColors.background,
 
     }]}>
         <View style={styles.topRow}>
             <Text style={[styles.email, {
-                color: myColors.secondary,
+                color: myColors.primary,
             }]}>{email}</Text>
             <TouchableOpacity onPress={onDelete}>
                 <Icon name="delete" size={20} color={myColors.red} />
