@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import HomeScreen from '../screens/HomeScreen';
+import HomeScreen from '../screensNew/HomeScreen';
 import LogsScreen from '../screens/LogsScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+// import SettingsScreen from '../screens/SettingsScreen';
 import AboutScreen from '../screens/AboutScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSecurity } from '../context/SecurityProvider';
@@ -17,25 +17,30 @@ import { useForegroundService } from '../context/ForegroundServiceContext';
 import { PERMISSIONS } from 'react-native-permissions';
 import CapturePhotosScreen from '../screens/CapturePhotosScreen';
 import PhotoGalleryScreen from '../screens/PhotoGalleryScreen';
+import ContactsScreen from '../screensNew/ContactsScreen';
+import EventsScreen from '../screensNew/EventsScreen';
+import SettingsScreen from '../screensNew/SettingsScreen';
+import { myColors } from '../theme/colors';
+import { Dimensions } from 'react-native';
 
+const { width, height } = Dimensions.get('window');
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 export type RootStackParamList = {
-  Logs: undefined;
   Home: undefined;
+  Contacts: undefined;
+  Events: undefined;
   Settings: undefined;
-  About: undefined;
 };
 
 const TabNavigator = () => {
-  const { theme } = useSecurity();
-  const themeColors = colors[theme]; // Get theme-specific colors
 
 
   return (
     <Tab.Navigator
+    initialRouteName='Contacts'
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
@@ -43,33 +48,29 @@ const TabNavigator = () => {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Logs') {
-            iconName = focused ? 'clipboard-text' : 'clipboard-text-outline';
+          } else if (route.name === 'Contacts') {
+            iconName = focused ? 'account-group' : 'account-group-outline'; 
+          } else if (route.name === 'Events') {
+            iconName = focused ? 'calendar' : 'calendar-outline'; 
           } else if (route.name === 'Settings') {
             iconName = focused ? 'cog' : 'cog-outline';
-          } else if (route.name === 'About') {
-            iconName = focused ? 'information' : 'information-outline';
-          } else if (route.name === 'PhotoGallery') {
-            iconName = focused ? 'image' : 'image-outline';
           }
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: themeColors.primary,
-        tabBarInactiveTintColor: themeColors.primary,
+        tabBarActiveTintColor: myColors.secondary,
+        tabBarInactiveTintColor: myColors.primary,
         tabBarStyle: {
-          backgroundColor: themeColors.secondary,
-          paddingBottom: 5,
-          height: 60,
-          borderTopColor: themeColors.primary,
+          backgroundColor: myColors.tertiary,
+          height: height * 0.07,
+          borderTopColor: myColors.primary,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Logs" component={LogsScreen} />
+      <Tab.Screen name="Contacts" component={ContactsScreen} />
+      <Tab.Screen name="Events" component={EventsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
-      <Tab.Screen name="About" component={AboutScreen} />
-      <Tab.Screen name="PhotoGallery" component={PhotoGalleryScreen} />
     </Tab.Navigator>
   );
 };
@@ -134,7 +135,7 @@ const AppNavigator = () => {
       console.warn('Foreground service is not available or createNotificationChannel is not defined');
     }
   }, []);
-  
+
   if (permissionsGranted === false) {
     return <PermissionRequiredScreen />;
   }
@@ -146,11 +147,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
-      <Stack.Navigator initialRouteName='Main' screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Main" component={TabNavigator} />
-        <Stack.Screen name="CapturePhotosScreen" component={CapturePhotosScreen} />
-        <Stack.Screen name="PhotoGallery" component={PhotoGalleryScreen} />
-      </Stack.Navigator>
+      <TabNavigator />
     </NavigationContainer>
   );
 };
