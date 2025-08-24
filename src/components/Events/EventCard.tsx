@@ -22,7 +22,7 @@ const EventCard: React.FC<EventCardProps> = ({
   frontPhoto,
   backPhoto,
 }) => (
-  <View style={[styles.eventCard, { backgroundColor: myColors.background, borderColor: myColors.primary, borderWidth: 1 }]}>
+  <View style={[styles.eventCard, { backgroundColor: myColors.background, borderColor: myColors.secondary, borderWidth: 1 }]}>
     <View style={styles.eventHeader}>
       <Text style={[styles.eventDate, { color: myColors.secondary }]}>{dateTime}</Text>
       <TouchableOpacity onPress={onDelete}>

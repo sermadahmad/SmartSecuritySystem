@@ -1,20 +1,72 @@
-import React, { useState, useRef, useEffect } from "react";
-import { StyleSheet, Text, View, ScrollView, StatusBar, Animated, Easing, TouchableOpacity, Dimensions, Image } from 'react-native'
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { myColors } from '../theme/colors'
+import React, { useState } from "react";
+import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
+import Icon from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { myColors } from '../theme/colors';
 import HomeHeader from '../components/Home/HomeHeader';
-import ShieldButton from '../components/Home/ShieldButton';
-import StatusIndicator from "../components/StatusIndicator";
-import PanicButton from "../components/Home/PanicButton";
+import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
+import TrackPlayer from 'react-native-track-player';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+const alarmSounds = [
+  { label: "Default", file: require('../assets/audios/alarm.mp3') },
+  { label: "Force", file: require('../assets/audios/alarm_force.mp3') },
+  { label: "Extreme Clock", file: require('../assets/audios/extreme_alarm_clock.mp3') },
+  { label: "Fire", file: require('../assets/audios/fire_alarm.mp3') },
+  { label: "Nuclear", file: require('../assets/audios/nuclear_alarm.mp3') },
+  { label: "Siren", file: require('../assets/audios/siren_alarm.mp3') },
+  { label: "Siren Tone", file: require('../assets/audios/siren_tone_alarm.mp3') },
+];
+
+const playDurations = [
+  { label: "1 min", value: 60 },
+  { label: "2 min", value: 120 },
+  { label: "5 min", value: 300 },
+  { label: "10 min", value: 600 },
+  { label: "Infinite", value: -1 },
+];
 
 const SettingsScreen = () => {
   const [alarmDelay, setAlarmDelay] = useState(0);
+  const [selectedSound, setSelectedSound] = useState(alarmSounds[0]);
+  const [playingSound, setPlayingSound] = useState<string | null>(null);
+  const [showSoundDropdown, setShowSoundDropdown] = useState(false);
+  const [alarmVolume, setAlarmVolume] = useState(1);
+  const [selectedDuration, setSelectedDuration] = useState(playDurations[4]);
+  const [sendLocation, setSendLocation] = useState(true);
+  const [sendPhotos, setSendPhotos] = useState(true);
+  const [sendEventDetails, setSendEventDetails] = useState(true);
 
   const handleIncrement = () => setAlarmDelay(alarmDelay + 1);
   const handleDecrement = () => setAlarmDelay(alarmDelay > 0 ? alarmDelay - 1 : 0);
+
+  const playSound = async (sound: { label: string; file: any }) => {
+    try {
+      console.log("playSound called with:", sound.label);
+      await setupAlarmPlayer(sound.file, sound.label);
+      await TrackPlayer.setVolume(alarmVolume);
+      console.log("setupAlarmPlayer finished");
+      await startAlarm();
+      console.log("startAlarm finished");
+      setPlayingSound(sound.label);
+    } catch (e) {
+      console.log("Error playing sound:", e);
+      setPlayingSound(null);
+    }
+  };
+
+  const stopSoundHandler = async () => {
+    try {
+      console.log("stopSoundHandler called");
+      await stopAlarm();
+      console.log("stopAlarm finished");
+      setPlayingSound(null);
+    } catch (e) {
+      console.log("Error stopping sound:", e);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: myColors.background }]}>
@@ -25,55 +77,260 @@ const SettingsScreen = () => {
             nameLogoSource={require('../assets/settingsLogo.png')}
             style={{ width: width * 0.3, marginLeft: width * 0.15 }}
           />
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionHeaderText, { color: myColors.secondary }]}>
+                Security Timers:
+              </Text>
+            </View>
+            <View style={styles.timerRow}>
+              <Text style={[styles.timerLabel, { color: myColors.primary }]}>Alarm Delay: </Text>
+              <View style={styles.timerControl}>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrement}>
+                  <MaterialCommunityIcons name="minus" size={22} color={myColors.primary} />
+                </TouchableOpacity>
+                <Text style={[styles.timerValue, { color: myColors.primary }]}>{alarmDelay}</Text>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrement}>
+                  <MaterialCommunityIcons name="plus" size={22} color={myColors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
+              Lock Delay (how long device must stay locked & still before monitoring).
+            </Text>
+            <View style={styles.timerRow}>
+              <Text style={[styles.timerLabel, { color: myColors.primary }]}>Lock Delay: </Text>
+              <View style={styles.timerControl}>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrement}>
+                  <MaterialCommunityIcons name="minus" size={22} color={myColors.primary} />
+                </TouchableOpacity>
+                <Text style={[styles.timerValue, { color: myColors.primary }]}>{alarmDelay}</Text>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrement}>
+                  <MaterialCommunityIcons name="plus" size={22} color={myColors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
+              Alarm Delay (grace time to unlock before alarm).
+            </Text>
+          </>
+          <View style={{
+            backgroundColor: myColors.text,
+            height: 1,
+            marginTop: 5,
+          }} />
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionHeaderText, { color: myColors.secondary }]}>
+              Alarm Timers:
+            </Text>
+            <>
+              <View style={styles.chooseSoundRow}>
+                <Text style={[styles.timerLabel, { color: myColors.primary }]}>Choose Sound:</Text>
+                <TouchableOpacity
+                  style={[styles.chooseSoundButton, { borderColor: myColors.secondary, backgroundColor: myColors.tertiary }]}
+                  onPress={() => setShowSoundDropdown(!showSoundDropdown)}
+                >
+                  <Text style={[styles.selectedSoundText, { color: myColors.secondary }]}>
+                    {selectedSound.label}
+                  </Text>
+                  <Icon name="arrow-drop-down" size={22} color={myColors.secondary} />
+                </TouchableOpacity>
+              </View>
+              {showSoundDropdown && (
+                <View style={[styles.soundDropdown, { backgroundColor: myColors.background, borderColor: myColors.secondary }]}>
+                  {alarmSounds.map((sound) => (
+                    <View key={sound.label} style={styles.soundRow}>
+                      <TouchableOpacity
+                        style={[
+                          styles.soundOption,
+                          {
+                            borderColor: selectedSound.label === sound.label ? myColors.secondary : myColors.secondary,
+                            backgroundColor: selectedSound.label === sound.label ? myColors.tertiary : myColors.background,
+                          }
+                        ]}
+                        onPress={() => {
+                          setSelectedSound(sound);
+                          setShowSoundDropdown(false);
+                          stopSoundHandler();
+                        }}
+                      >
+                        <Text style={{
+                          color: selectedSound.label === sound.label ? myColors.secondary : myColors.primary,
+                          fontWeight: selectedSound.label === sound.label ? 'bold' : 'normal'
+                        }}>
+                          {sound.label}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.playButton, { borderColor: myColors.secondary, backgroundColor: myColors.background }]}
+                        onPress={() =>
+                          playingSound === sound.label
+                            ? stopSoundHandler()
+                            : playSound(sound)
+                        }
+                      >
+                        <Icon
+                          name={playingSound === sound.label ? "stop" : "play-arrow"}
+                          size={22}
+                          color={myColors.secondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <Text style={[styles.timerLabel, { color: myColors.primary }]}>Alarm Volume:</Text>
+                <View style={styles.volumeRow}>
+                  <TouchableOpacity
+                    style={[styles.volumeButton, { borderColor: myColors.secondary }]}
+                    onPress={() => setAlarmVolume(Math.max(alarmVolume - 0.1, 0))}
+                  >
+                    <MaterialCommunityIcons name="volume-minus" size={22} color={myColors.primary} />
+                  </TouchableOpacity>
+                  <Text style={[styles.volumeValue, { color: myColors.secondary }]}>
+                    {Math.round(alarmVolume * 100)}%
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.volumeButton, { borderColor: myColors.secondary }]}
+                    onPress={() => setAlarmVolume(Math.min(alarmVolume + 0.1, 1))}
+                  >
+                    <MaterialCommunityIcons name="volume-plus" size={22} color={myColors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.durationSection}>
+                <Text style={[styles.timerLabel, { color: myColors.primary }]}>Play Duration:</Text>
+                <View style={[styles.durationOptionsRow, {
+                  backgroundColor: myColors.background,
+                }]}>
+                  {playDurations.map((option) => (
+                    <TouchableOpacity
+                      key={option.label}
+                      style={[
+                        styles.durationOption,
+                        { borderColor: myColors.secondary },
+                        selectedDuration.value === option.value && {
+                          backgroundColor: myColors.tertiary,
+                          borderColor: myColors.secondary,
+                        },
+                      ]}
+                      onPress={() => setSelectedDuration(option)}
+                    >
+                      <Text style={{
+                        color: selectedDuration.value === option.value ? myColors.secondary : myColors.primary,
+                        fontWeight: selectedDuration.value === option.value ? 'bold' : 'normal'
+                      }}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
+                  Select how long the alarm should play. "Infinite" will play until you stop or unlock the device.
+                </Text>
+              </View>
+            </>
+          </View>
+          <View style={{
+            backgroundColor: myColors.text,
+            height: 1,
+            marginBottom: 15,
+          }} />
           <View>
-            <>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>Security Timers: </Text>
-              </View>
-              <View style={styles.timerRow}>
-                <Text style={styles.timerLabel}>Alarm Delay: </Text>
-                <View style={styles.timerControl}>
-                  <TouchableOpacity style={styles.timerButton} onPress={handleDecrement}>
-                    <Icon name="minus" size={22} color={myColors.primary} />
-                  </TouchableOpacity>
-                  <Text style={styles.timerValue}>{alarmDelay}</Text>
-                  <TouchableOpacity style={styles.timerButton} onPress={handleIncrement}>
-                    <Icon name="plus" size={22} color={myColors.primary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Text style={styles.timerInfo}>
-                Lock Delay (how long device must stay locked & still before monitoring).
-              </Text>
-              <View style={styles.timerRow}>
-                <Text style={styles.timerLabel}>Lock Delay: </Text>
-                <View style={styles.timerControl}>
-                  <TouchableOpacity style={styles.timerButton} onPress={handleDecrement}>
-                    <Icon name="minus" size={22} color={myColors.primary} />
-                  </TouchableOpacity>
-                  <Text style={styles.timerValue}>{alarmDelay}</Text>
-                  <TouchableOpacity style={styles.timerButton} onPress={handleIncrement}>
-                    <Icon name="plus" size={22} color={myColors.primary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Text style={styles.timerInfo}>
-                Alarm Delay (grace time to unlock before alarm).
-              </Text>
-            </>
-            <>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>Alarm Timers: </Text>
-              </View>
-              <Text style={styles.timerLabel}>Choose Sound: </Text>
-            </>
-
+            <Text style={[styles.sectionHeaderText, { color: myColors.secondary }]}>
+              Capture & Alerts:
+            </Text>
+            <View style={styles.checkboxRow}>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setSendLocation(!sendLocation)}
+              >
+                <Icon
+                  name={sendLocation ? "check-box" : "check-box-outline-blank"}
+                  size={22}
+                  color={myColors.secondary}
+                />
+                <Text style={[styles.checkboxLabel, {
+                  color: myColors.primary,
+                }]}>Send Location</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setSendPhotos(!sendPhotos)}
+              >
+                <Icon
+                  name={sendPhotos ? "check-box" : "check-box-outline-blank"}
+                  size={22}
+                  color={myColors.secondary}
+                />
+                <Text style={[styles.checkboxLabel, {
+                  color: myColors.primary,
+                }]}>Send Photos</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setSendEventDetails(!sendEventDetails)}
+              >
+                <Icon
+                  name={sendEventDetails ? "check-box" : "check-box-outline-blank"}
+                  size={22}
+                  color={myColors.secondary}
+                />
+                <Text style={[styles.checkboxLabel, {
+                  color: myColors.primary,
+                }]}>Send Event Details</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
+              Select what information will be sent to your emergency contacts when a security event is triggered.
+              You can choose to share your location, photos, and event details for better assistance.
+            </Text>
+          </View>
+          <View style={{
+            backgroundColor: myColors.text,
+            height: 1,
+            marginVertical: 10,
+          }} />
+          <View>
+            <Text style={[styles.sectionHeaderText, { color: myColors.secondary }]}>
+              General:
+            </Text>
+            <View style={styles.generalButtonsRow}>
+              <TouchableOpacity
+                style={[styles.generalButton, { backgroundColor: myColors.tertiary, borderColor: myColors.secondary }]}
+                onPress={() => {
+                  // TODO: Add logic to reset to defaults
+                  console.log("Reset to defaults pressed");
+                }}
+              >
+                <Icon name="restore" size={20} color={myColors.secondary} />
+                <Text style={[styles.generalButtonText, { color: myColors.secondary }]}>Reset to Defaults</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.generalButton, { backgroundColor: myColors.red, borderColor: myColors.secondary }]}
+                onPress={() => {
+                  // TODO: Add logic to clear event logs
+                  console.log("Clear event logs pressed");
+                }}
+              >
+                <Icon name="delete-forever" size={20} color={myColors.background} />
+                <Text style={[styles.generalButtonText, { color: myColors.background }]}>Clear Event Logs</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
+              Use these options to restore all settings to their default values or clear all recorded security event logs from your device.
+            </Text>
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -84,56 +341,164 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    padding: 10,
   },
   sectionHeader: {
-    paddingVertical: 10,
+    paddingTop: 10,
   },
   sectionHeaderText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: myColors.secondary,
     letterSpacing: 1,
   },
   timerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 8,
   },
   timerLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: myColors.primary,
   },
   timerControl: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 5,
   },
   timerButton: {
     padding: 6,
-    borderRadius: 16,
-    marginHorizontal: 4,
+    borderRadius: 15,
+    marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: myColors.secondary,
   },
   timerValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: myColors.primary,
-    marginHorizontal: 8,
+    marginHorizontal: 10,
     minWidth: 32,
     textAlign: 'center',
   },
   timerInfo: {
-    // marginTop: 8,
-    // marginBottom: 16,
     fontSize: 14,
-    color: myColors.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 5,
+  },
+  chooseSoundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    justifyContent: 'space-between',
+  },
+  chooseSoundButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderWidth: 1,
+  },
+  selectedSoundText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
+  soundDropdown: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10,
+    marginTop: 5,
+    marginBottom: 20,
+    zIndex: 10,
+  },
+  soundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    justifyContent: 'space-between',
+  },
+  soundOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  playButton: {
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  volumeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+    justifyContent: 'flex-start',
+  },
+  volumeButton: {
+    padding: 6,
+    borderRadius: 15,
+    marginHorizontal: 5,
+    borderWidth: 1,
+  },
+  volumeValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginHorizontal: 10,
+    minWidth: 48,
+    textAlign: 'center',
+  },
+  durationSection: {
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  durationOptionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    gap: 8,
+  },
+  durationOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  checkboxRow: {
+    marginTop: 15,
+  },
+  checkbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  generalButtonsRow: {
+    marginVertical: 10,
+    gap: 10,
+  },
+  generalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+  },
+  generalButtonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });
 
