@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import uuid from 'react-native-uuid';
 
 export type MonitoringStatus = 'security_active' | 'security_inactive' | 'alarm_triggered';
 
@@ -31,6 +32,7 @@ const DEFAULT_SETTINGS: PersistentSettings = {
 
 export const usePersistentState = () => {
     const [settings, setSettings] = useState<PersistentSettings>(DEFAULT_SETTINGS);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadState = async () => {
@@ -39,6 +41,13 @@ export const usePersistentState = () => {
                 if (storedSettings !== null) {
                     setSettings(JSON.parse(storedSettings));
                 }
+                // Load or create userId
+                let id = await AsyncStorage.getItem('userId');
+                if (!id) {
+                    id = uuid.v4() as string;
+                    await AsyncStorage.setItem('userId', id);
+                }
+                setUserId(id);
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
@@ -81,6 +90,7 @@ export const usePersistentState = () => {
 
     return {
         settings,
+        userId, // <-- Add userId here
         setMonitoringActive,
         setMonitoringInactive,
         setAlarmTriggered,

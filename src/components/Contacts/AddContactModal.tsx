@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, Modal, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Modal, StyleSheet, ActivityIndicator } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { myColors } from "../../theme/colors";
 
@@ -15,6 +15,7 @@ type AddContactModalProps = {
     setSendPhotos: (v: boolean) => void;
     sendEventDetails: boolean;
     setSendEventDetails: (v: boolean) => void;
+    loading?: boolean; // <-- Add loading prop
 };
 
 const AddContactModal: React.FC<AddContactModalProps> = ({
@@ -29,6 +30,7 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     setSendPhotos,
     sendEventDetails,
     setSendEventDetails,
+    loading = false,
 }) => {
     const [error, setError] = useState("");
 
@@ -66,14 +68,17 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                         }}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        editable={!loading}
                     />
                     {error ? (
                         <Text style={{ color: myColors.red, marginBottom: 8, textAlign: 'center' }}>{error}</Text>
                     ) : null}
                     <View style={styles.checkboxRow}>
+                        {/* Disable checkboxes when loading */}
                         <TouchableOpacity
                             style={styles.checkbox}
-                            onPress={() => setSendLocation(!sendLocation)}
+                            onPress={() => !loading && setSendLocation(!sendLocation)}
+                            disabled={loading}
                         >
                             <Icon
                                 name={sendLocation ? "check-box" : "check-box-outline-blank"}
@@ -84,7 +89,8 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.checkbox}
-                            onPress={() => setSendPhotos(!sendPhotos)}
+                            onPress={() => !loading && setSendPhotos(!sendPhotos)}
+                            disabled={loading}
                         >
                             <Icon
                                 name={sendPhotos ? "check-box" : "check-box-outline-blank"}
@@ -95,7 +101,8 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.checkbox}
-                            onPress={() => setSendEventDetails(!sendEventDetails)}
+                            onPress={() => !loading && setSendEventDetails(!sendEventDetails)}
+                            disabled={loading}
                         >
                             <Icon
                                 name={sendEventDetails ? "check-box" : "check-box-outline-blank"}
@@ -105,14 +112,18 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
                             <Text style={[styles.checkboxLabel, { color: myColors.primary }]}>Send Event Details</Text>
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.modalButtonRow}>
-                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.red, borderColor: myColors.secondary }]} onPress={onClose}>
-                            <Text style={[styles.modalButtonText, { color: myColors.background }]}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.background, borderColor: myColors.secondary }]} onPress={handleSave}>
-                            <Text style={[styles.modalButtonText, { color: myColors.primary }]}>Save</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {loading ? (
+                        <ActivityIndicator size="large" color={myColors.secondary} style={{ marginVertical: 10 }} />
+                    ) : (
+                        <View style={styles.modalButtonRow}>
+                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.red, borderColor: myColors.secondary }]} onPress={onClose}>
+                                <Text style={[styles.modalButtonText, { color: myColors.background }]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.background, borderColor: myColors.secondary }]} onPress={handleSave}>
+                                <Text style={[styles.modalButtonText, { color: myColors.primary }]}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </View>
         </Modal>

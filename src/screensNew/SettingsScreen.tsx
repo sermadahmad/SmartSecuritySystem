@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
 import TrackPlayer from 'react-native-track-player';
 import { useSecurity } from "../context/SecurityProvider";
 import { alarmSounds } from "../utils/alarmSounds";
+import { getFirestore, collection, getDocs, deleteDoc, doc, FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { usePersistentState } from "../hooks/usePersistentState";
 
 const { width } = Dimensions.get('window');
 
@@ -32,11 +34,14 @@ const SettingsScreen = () => {
     setSendPhotos,
     setSendEventDetails,
     setPlayAlarm,
-    resetSettings
+    resetSettings,
+    setEventLogs,
   } = useSecurity();
+  const { userId } = usePersistentState();
 
   const [playingSound, setPlayingSound] = useState<string | null>(null);
   const [showSoundDropdown, setShowSoundDropdown] = useState(false);
+  const [clearingLogs, setClearingLogs] = useState(false);
 
   // Use settings state for all values
   const alarmDelay = settings.alarmDelay;
@@ -78,6 +83,25 @@ const SettingsScreen = () => {
       setPlayingSound(null);
     } catch (e) {
       console.log("Error stopping sound:", e);
+    }
+  };
+
+  const handleClearEventLogs = async () => {
+    if (!userId) return;
+    setClearingLogs(true);
+    try {
+      const db = getFirestore();
+      const querySnapshot = await getDocs(collection(db, `users/${userId}/eventLogs`));
+      const batchDeletes = querySnapshot.docs.map((docSnap: FirebaseFirestoreTypes.QueryDocumentSnapshot) =>
+        deleteDoc(doc(db, `users/${userId}/eventLogs/${docSnap.id}`))
+      );
+      await Promise.all(batchDeletes);
+      setEventLogs([]); // Clear local state
+      console.log("All event logs cleared from Firestore.");
+    } catch (error) {
+      console.error("Error clearing event logs:", error);
+    } finally {
+      setClearingLogs(false);
     }
   };
 
@@ -336,13 +360,15 @@ const SettingsScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.generalButton, { backgroundColor: myColors.red, borderColor: myColors.secondary }]}
-                onPress={() => {
-                  // TODO: Add logic to clear event logs
-                  console.log("Clear event logs pressed");
-                }}
+                onPress={handleClearEventLogs}
+                disabled={clearingLogs}
               >
                 <Icon name="delete-forever" size={20} color={myColors.background} />
-                <Text style={[styles.generalButtonText, { color: myColors.background }]}>Clear Event Logs</Text>
+                {clearingLogs ? (
+                  <ActivityIndicator size="small" color={myColors.background} />
+                ) : (
+                  <Text style={[styles.generalButtonText, { color: myColors.background }]}>Clear Event Logs</Text>
+                )}
               </TouchableOpacity>
             </View>
             <Text style={[styles.timerInfo, { color: myColors.secondary }]}>

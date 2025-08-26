@@ -15,6 +15,9 @@ import { getGoogleMapsLink } from "../../utils/locationService";
 import { captureSecurityPhotos } from "../../utils/cameraCapture";
 import { startForegroundService } from "../../utils/foregroundService";
 import { useForegroundService } from "../../context/ForegroundServiceContext";
+import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { usePersistentState } from '../../hooks/usePersistentState';
+import { EventLog } from '../../context/SecurityProvider'; // Import your EventLog type
 
 const PanicButton = () => {
   const {
@@ -25,12 +28,12 @@ const PanicButton = () => {
     },
     setAlarmTriggered,
     setMonitoringActive,
-    eventLogs,
     setEventLogs,
     setLocation,
   } = useSecurity();
 
   const foregroundService = useForegroundService();
+  const { userId } = usePersistentState();
 
   const [triggered, setTriggered] = useState(false);
   const [alarmActive, setAlarmActive] = useState(false);
@@ -97,7 +100,8 @@ const PanicButton = () => {
 
         // Store event log
         const now = new Date();
-        const eventLog = {
+        let eventLog: EventLog = {
+          id: '', // <-- Add id property
           date: now.toLocaleDateString(),
           time: now.toLocaleTimeString(),
           triggerType: 'Panic Button',
@@ -105,7 +109,21 @@ const PanicButton = () => {
           location: locationLink,
           photoURIs: photoResult,
           alarmSound: selectedSound,
+          createdAt: serverTimestamp(),
         };
+
+        try {
+          if (userId) {
+            const db = getFirestore();
+            // Remove 'id' before saving
+            const { id, ...eventLogData } = eventLog;
+            const docRef = await addDoc(collection(db, `users/${userId}/eventLogs`), eventLogData);
+            eventLog.id = docRef.id; // Set Firestore doc ID
+          }
+        } catch (error) {
+          console.error('Error saving event log to Firestore:', error);
+        }
+
         setEventLogs(prev => [...prev, eventLog]);
       }
     });

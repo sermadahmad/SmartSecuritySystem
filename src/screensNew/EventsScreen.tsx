@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions, Image } from 'react-native'
+import React, { useState, useEffect, useCallback } from "react";
+import { StyleSheet, Text, View, ScrollView, StatusBar, TouchableOpacity, Dimensions, Image, RefreshControl, ActivityIndicator } from 'react-native'
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { myColors } from '../theme/colors'
 import HomeHeader from '../components/Home/HomeHeader';
 import EventCard from '../components/Events/EventCard';
 import { useSecurity } from "../context/SecurityProvider";
+import { getFirestore, collection, getDocs, FirebaseFirestoreTypes, deleteDoc, doc } from '@react-native-firebase/firestore';
+import { usePersistentState } from "../hooks/usePersistentState";
 
 const { width } = Dimensions.get('window');
 
@@ -14,10 +16,52 @@ const EventsScreen = () => {
     eventLogs,
     setEventLogs,
   } = useSecurity();
+  const { userId } = usePersistentState();
 
   const [showTriggerDropdown, setShowTriggerDropdown] = useState(false);
   const [selectedTrigger, setSelectedTrigger] = useState("Show All");
+  const [loading, setLoading] = useState(false); // <-- Add loading state
+  const [refreshing, setRefreshing] = useState(false);
   const triggerOptions = ["Show All", "Unauthorized Access", "Panic Button"];
+
+  // Fetch event logs from Firestore
+  const fetchEventLogs = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true); // <-- Start loading
+    try {
+      const db = getFirestore();
+      const querySnapshot = await getDocs(collection(db, `users/${userId}/eventLogs`));
+      const logs = querySnapshot.docs.map((docSnap: FirebaseFirestoreTypes.QueryDocumentSnapshot) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setEventLogs(logs);
+    } catch (error) {
+      console.error('Error fetching event logs:', error);
+    } finally {
+      setLoading(false); // <-- End loading
+    }
+  }, [userId, setEventLogs]);
+
+  useEffect(() => {
+    fetchEventLogs();
+  }, [userId, fetchEventLogs]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchEventLogs();
+    setRefreshing(false);
+  }, [fetchEventLogs]);
+
+  const handleDeleteEventLog = async (id: string) => {
+    try {
+      const db = getFirestore();
+      await deleteDoc(doc(db, `users/${userId}/eventLogs/${id}`));
+      setEventLogs(prev => prev.filter(log => log.id !== id));
+    } catch (error) {
+      console.error('Error deleting event log:', error);
+    }
+  };
 
   // Filter event logs based on selected trigger
   const filteredLogs = selectedTrigger === "Show All"
@@ -45,7 +89,17 @@ const EventsScreen = () => {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: myColors.background }]}>
       <StatusBar barStyle="dark-content" backgroundColor={myColors.background} />
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[myColors.secondary]}
+            tintColor={myColors.secondary}
+          />
+        }
+      >
         <View style={styles.container}>
           <View>
             <HomeHeader
@@ -93,14 +147,16 @@ const EventsScreen = () => {
             </View>
           </View>
           <View>
-            {sortedLogs.length === 0 ? (
+            {loading && !refreshing ? (
+              <ActivityIndicator size="large" color={myColors.secondary} style={{ marginVertical: 32 }} />
+            ) : sortedLogs.length === 0 ? (
               <Text style={{ textAlign: 'center', color: myColors.primary, fontSize: 16 }}>
                 No Security events recorded yet.
               </Text>
             ) : (
               sortedLogs.map((event, index) => (
                 <EventCard
-                  key={index}
+                  key={event.id || index}
                   dateTime={`${event.date} ${event.time}`}
                   triggeredBy={event.triggerType}
                   location={event.location}
@@ -115,9 +171,7 @@ const EventsScreen = () => {
                       ? { uri: event.photoURIs[1].startsWith('file://') ? event.photoURIs[1] : `file://${event.photoURIs[1]}` }
                       : require('../assets/image.png')
                   }
-                  onDelete={() => {
-                    setEventLogs(prev => prev.filter((_, i) => i !== index));
-                  }}
+                  onDelete={() => handleDeleteEventLog(event.id)}
                 />
               ))
             )}

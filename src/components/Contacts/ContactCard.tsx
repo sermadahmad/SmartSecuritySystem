@@ -5,6 +5,7 @@ import { myColors } from "../../theme/colors";
 import ContactActionButton from "./ContactActionButton";
 
 type ContactCardProps = {
+    id?: string; // <-- Add id prop
     email: string;
     sendLocation: boolean;
     sendPhotos: boolean;
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     email: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
     },
     actionRow: {

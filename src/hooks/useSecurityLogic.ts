@@ -11,6 +11,8 @@ import { MonitoringStatus } from './usePersistentState';
 import { alarmSounds } from '../utils/alarmSounds';
 import TrackPlayer from 'react-native-track-player';
 import { EventLog } from '../context/SecurityProvider';
+import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 
 export const useSecurityLogic = (
@@ -36,6 +38,7 @@ export const useSecurityLogic = (
     const lockDelayTimer = useRef<number | null>(null);
     const alarmDelayTimer = useRef<number | null>(null);
     const foregroundService = useForegroundService();
+    const { userId } = usePersistentState();
 
     useEffect(() => {
         BackgroundTimer.start();
@@ -117,7 +120,8 @@ export const useSecurityLogic = (
 
                             // Store event log
                             const now = new Date();
-                            const eventLog: EventLog = {
+                            let eventLog: EventLog = {
+                                id: '', // Add id property
                                 date: now.toLocaleDateString(),
                                 time: now.toLocaleTimeString(),
                                 triggerType: 'Unauthorized Access',
@@ -125,9 +129,21 @@ export const useSecurityLogic = (
                                 location: locationLink,
                                 photoURIs: photoResult,
                                 alarmSound: settings.selectedSound,
+                                createdAt: serverTimestamp(),
                             };
-                            console.log('Event Log:', eventLog);
-                            // console.log('Photo URIs:', eventLog.photoURIs);
+
+                            try {
+                                if (userId) {
+                                    const db = getFirestore();
+                                    // Remove 'id' before saving
+                                    const { id, ...eventLogData } = eventLog;
+                                    const docRef = await addDoc(collection(db, `users/${userId}/eventLogs`), eventLogData);
+                                    eventLog.id = docRef.id; // Set Firestore doc ID
+                                }
+                            } catch (error) {
+                                console.error('Error saving event log to Firestore:', error);
+                            }
+
                             setEventLogs(prev => [...prev, eventLog]);
                         } else {
                             console.log('Device Unlocked. Alarm Stopped.');

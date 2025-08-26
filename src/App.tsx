@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SecurityProvider } from './context/SecurityProvider';
 import AppNavigator from './navigation/AppNavigator';
 import { ForegroundServiceProvider } from './context/ForegroundServiceContext';

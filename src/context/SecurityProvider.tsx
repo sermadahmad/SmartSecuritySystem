@@ -4,6 +4,7 @@ import { useTheme } from '../hooks/useTheme';
 import { MonitoringStatus, usePersistentState } from '../hooks/usePersistentState';
 
 export type EventLog = {
+    id: string;
     date: string;
     time: string;
     triggerType: string;
@@ -11,9 +12,11 @@ export type EventLog = {
     location: string | null;
     photoURIs: string[];
     alarmSound: string;
+    createdAt: any; // Firestore timestamp
 };
 
 export type Contact = {
+    id: string; 
     email: string;
     sendLocation: boolean;
     sendPhotos: boolean;
@@ -21,6 +24,7 @@ export type Contact = {
 };
 
 type SecurityContextType = {
+    userId: string | null;
     securityActivated: boolean;
     theme: 'light' | 'dark';
     toggleTheme: () => void;
@@ -61,6 +65,7 @@ const SecurityContext = createContext<SecurityContextType | undefined>(undefined
 
 export const SecurityProvider = ({ children }: { children: ReactNode }) => {
     const {
+        userId,
         settings,
         setMonitoringActive,
         setMonitoringInactive,
@@ -89,6 +94,7 @@ export const SecurityProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <SecurityContext.Provider value={{
+            userId,
             securityActivated,
             theme,
             toggleTheme,
