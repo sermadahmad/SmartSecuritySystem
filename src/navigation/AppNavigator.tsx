@@ -3,9 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import HomeScreen from '../screensNew/HomeScreen';
-import LogsScreen from '../screens/LogsScreen';
+// import LogsScreen from '../screens/LogsScreen';
 // import SettingsScreen from '../screens/SettingsScreen';
-import AboutScreen from '../screens/AboutScreen';
+// import AboutScreen from '../screens/AboutScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSecurity } from '../context/SecurityProvider';
 import colors from '../theme/colors';
@@ -15,8 +15,8 @@ import PermissionRequiredScreen from '../screens/PermissionRequiredScreen';
 import { channelConfig } from '../utils/foregroundService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
 import { PERMISSIONS } from 'react-native-permissions';
-import CapturePhotosScreen from '../screens/CapturePhotosScreen';
-import PhotoGalleryScreen from '../screens/PhotoGalleryScreen';
+// import CapturePhotosScreen from '../screens/CapturePhotosScreen';
+// import PhotoGalleryScreen from '../screens/PhotoGalleryScreen';
 import ContactsScreen from '../screensNew/ContactsScreen';
 import EventsScreen from '../screensNew/EventsScreen';
 import SettingsScreen from '../screensNew/SettingsScreen';
@@ -26,21 +26,11 @@ import { Dimensions } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
-
-export type RootStackParamList = {
-  Home: undefined;
-  Contacts: undefined;
-  Events: undefined;
-  Settings: undefined;
-};
 
 const TabNavigator = () => {
-
-
   return (
     <Tab.Navigator
-    initialRouteName='Events'
+    initialRouteName='Home'
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
@@ -58,11 +48,11 @@ const TabNavigator = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: myColors.secondary,
-        tabBarInactiveTintColor: myColors.primary,
+        tabBarActiveTintColor: myColors.primary,
+        tabBarInactiveTintColor: myColors.secondary,
         tabBarStyle: {
           backgroundColor: myColors.tertiary,
-          height: height * 0.07,
+          height: height * 0.08,
           borderTopColor: myColors.primary,
         },
       })}
@@ -77,8 +67,6 @@ const TabNavigator = () => {
 
 
 const AppNavigator = () => {
-  const { theme } = useSecurity();
-  const isDark = theme === 'dark';
   const [permissionsGranted, setPermissionsGranted] = useState<boolean | null>(null);
   const appState = useRef(AppState.currentState);
 
@@ -93,6 +81,8 @@ const AppNavigator = () => {
           PERMISSIONS.ANDROID.BODY_SENSORS,
           PERMISSIONS.ANDROID.CAMERA,
           PERMISSIONS.ANDROID.RECORD_AUDIO,
+          PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+          PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
         ]
       );
       setPermissionsGranted(granted);
@@ -146,7 +136,7 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
+    <NavigationContainer>
       <TabNavigator />
     </NavigationContainer>
   );

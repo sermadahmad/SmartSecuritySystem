@@ -1,21 +1,21 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useSecurity } from '../context/SecurityProvider';
+// import React from 'react';
+// import { View, Text, StyleSheet } from 'react-native';
+// import { useSecurity } from '../context/SecurityProvider';
 
-const SettingsScreen = () => {
-  const { theme } = useSecurity();
-  const isDark = theme === 'dark';
+// const SettingsScreen = () => {
+//   const { theme } = useSecurity();
+//   const isDark = theme === 'dark';
 
-  return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
-      <Text style={[styles.text, { color: isDark ? '#FFFFFF' : '#000' }]}>Settings Screen - Customize App</Text>
-    </View>
-  );
-};
+//   return (
+//     <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#FFFFFF' }]}>
+//       <Text style={[styles.text, { color: isDark ? '#FFFFFF' : '#000' }]}>Settings Screen - Customize App</Text>
+//     </View>
+//   );
+// };
 
-export default SettingsScreen;
+// export default SettingsScreen;
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 18, fontWeight: 'bold' },
-});
+// const styles = StyleSheet.create({
+//   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+//   text: { fontSize: 18, fontWeight: 'bold' },
+// });

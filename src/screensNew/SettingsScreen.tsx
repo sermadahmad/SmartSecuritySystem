@@ -7,18 +7,10 @@ import { myColors } from '../theme/colors';
 import HomeHeader from '../components/Home/HomeHeader';
 import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
 import TrackPlayer from 'react-native-track-player';
+import { useSecurity } from "../context/SecurityProvider";
+import { alarmSounds } from "../utils/alarmSounds";
 
 const { width } = Dimensions.get('window');
-
-const alarmSounds = [
-  { label: "Default", file: require('../assets/audios/alarm.mp3') },
-  { label: "Force", file: require('../assets/audios/alarm_force.mp3') },
-  { label: "Extreme Clock", file: require('../assets/audios/extreme_alarm_clock.mp3') },
-  { label: "Fire", file: require('../assets/audios/fire_alarm.mp3') },
-  { label: "Nuclear", file: require('../assets/audios/nuclear_alarm.mp3') },
-  { label: "Siren", file: require('../assets/audios/siren_alarm.mp3') },
-  { label: "Siren Tone", file: require('../assets/audios/siren_tone_alarm.mp3') },
-];
 
 const playDurations = [
   { label: "1 min", value: 60 },
@@ -29,18 +21,39 @@ const playDurations = [
 ];
 
 const SettingsScreen = () => {
-  const [alarmDelay, setAlarmDelay] = useState(0);
-  const [selectedSound, setSelectedSound] = useState(alarmSounds[0]);
+  const {
+    settings,
+    setAlarmDelay,
+    setLockDelay,
+    setSelectedSound,
+    setAlarmVolume,
+    setSelectedDuration,
+    setSendLocation,
+    setSendPhotos,
+    setSendEventDetails,
+    setPlayAlarm,
+    resetSettings
+  } = useSecurity();
+
   const [playingSound, setPlayingSound] = useState<string | null>(null);
   const [showSoundDropdown, setShowSoundDropdown] = useState(false);
-  const [alarmVolume, setAlarmVolume] = useState(1);
-  const [selectedDuration, setSelectedDuration] = useState(playDurations[4]);
-  const [sendLocation, setSendLocation] = useState(true);
-  const [sendPhotos, setSendPhotos] = useState(true);
-  const [sendEventDetails, setSendEventDetails] = useState(true);
 
-  const handleIncrement = () => setAlarmDelay(alarmDelay + 1);
-  const handleDecrement = () => setAlarmDelay(alarmDelay > 0 ? alarmDelay - 1 : 0);
+  // Use settings state for all values
+  const alarmDelay = settings.alarmDelay;
+  const lockDelay = settings.lockDelay;
+  const selectedSound = alarmSounds.find(s => s.label === settings.selectedSound) || alarmSounds[0];
+  const alarmVolume = settings.alarmVolume;
+  const selectedDuration = playDurations.find(d => d.value === settings.selectedDuration) || playDurations[0];
+  const sendLocation = settings.sendLocation;
+  const sendPhotos = settings.sendPhotos;
+  const sendEventDetails = settings.sendEventDetails;
+  const playAlarm = settings.playAlarm;
+
+  const handleIncrementAlarmDelay = () => setAlarmDelay(alarmDelay + 1);
+  const handleDecrementAlarmDelay = () => setAlarmDelay(alarmDelay > 0 ? alarmDelay - 1 : 0);
+
+  const handleIncrementLockDelay = () => setLockDelay(lockDelay + 1);
+  const handleDecrementLockDelay = () => setLockDelay(lockDelay > 0 ? lockDelay - 1 : 0);
 
   const playSound = async (sound: { label: string; file: any }) => {
     try {
@@ -86,32 +99,32 @@ const SettingsScreen = () => {
             <View style={styles.timerRow}>
               <Text style={[styles.timerLabel, { color: myColors.primary }]}>Alarm Delay: </Text>
               <View style={styles.timerControl}>
-                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrement}>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrementAlarmDelay}>
                   <MaterialCommunityIcons name="minus" size={22} color={myColors.primary} />
                 </TouchableOpacity>
                 <Text style={[styles.timerValue, { color: myColors.primary }]}>{alarmDelay}</Text>
-                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrement}>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrementAlarmDelay}>
                   <MaterialCommunityIcons name="plus" size={22} color={myColors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
             <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
-              Lock Delay (how long device must stay locked & still before monitoring).
+              Alarm Delay in seconds (grace time to unlock before alarm).
             </Text>
             <View style={styles.timerRow}>
               <Text style={[styles.timerLabel, { color: myColors.primary }]}>Lock Delay: </Text>
               <View style={styles.timerControl}>
-                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrement}>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleDecrementLockDelay}>
                   <MaterialCommunityIcons name="minus" size={22} color={myColors.primary} />
                 </TouchableOpacity>
-                <Text style={[styles.timerValue, { color: myColors.primary }]}>{alarmDelay}</Text>
-                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrement}>
+                <Text style={[styles.timerValue, { color: myColors.primary }]}>{lockDelay}</Text>
+                <TouchableOpacity style={[styles.timerButton, { borderColor: myColors.secondary }]} onPress={handleIncrementLockDelay}>
                   <MaterialCommunityIcons name="plus" size={22} color={myColors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
             <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
-              Alarm Delay (grace time to unlock before alarm).
+              Lock Delay in seconds (how long device must stay locked & still before monitoring).
             </Text>
           </>
           <View style={{
@@ -149,7 +162,7 @@ const SettingsScreen = () => {
                           }
                         ]}
                         onPress={() => {
-                          setSelectedSound(sound);
+                          setSelectedSound(sound.label);
                           setShowSoundDropdown(false);
                           stopSoundHandler();
                         }}
@@ -219,7 +232,7 @@ const SettingsScreen = () => {
                           borderColor: myColors.secondary,
                         },
                       ]}
-                      onPress={() => setSelectedDuration(option)}
+                      onPress={() => setSelectedDuration(option.value)}
                     >
                       <Text style={{
                         color: selectedDuration.value === option.value ? myColors.secondary : myColors.primary,
@@ -246,6 +259,19 @@ const SettingsScreen = () => {
               Capture & Alerts:
             </Text>
             <View style={styles.checkboxRow}>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setPlayAlarm(!playAlarm)}
+              >
+                <Icon
+                  name={playAlarm ? "check-box" : "check-box-outline-blank"}
+                  size={22}
+                  color={myColors.secondary}
+                />
+                <Text style={[styles.checkboxLabel, {
+                  color: myColors.primary,
+                }]}>Play Alarm</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.checkbox}
                 onPress={() => setSendLocation(!sendLocation)}
@@ -303,10 +329,7 @@ const SettingsScreen = () => {
             <View style={styles.generalButtonsRow}>
               <TouchableOpacity
                 style={[styles.generalButton, { backgroundColor: myColors.tertiary, borderColor: myColors.secondary }]}
-                onPress={() => {
-                  // TODO: Add logic to reset to defaults
-                  console.log("Reset to defaults pressed");
-                }}
+                onPress={resetSettings}
               >
                 <Icon name="restore" size={20} color={myColors.secondary} />
                 <Text style={[styles.generalButtonText, { color: myColors.secondary }]}>Reset to Defaults</Text>

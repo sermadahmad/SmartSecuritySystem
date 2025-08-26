@@ -1,20 +1,23 @@
 import React, { useRef, useEffect } from "react";
 import { View, TouchableOpacity, Animated, Image, Text, StyleSheet, Dimensions, Easing } from "react-native";
 import { myColors } from '../../theme/colors';
+import { useSecurity } from "../../context/SecurityProvider";
 
 const { width } = Dimensions.get('window');
 
-type ShieldButtonProps = {
-  active: boolean;
-  setActive: (active: boolean) => void;
-  isAlarmActive: boolean;
-};
-
-const ShieldButton: React.FC<ShieldButtonProps> = ({ active, setActive, isAlarmActive }) => {
+const ShieldButton = () => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const {
+    settings: {
+      status
+    },
+    setMonitoringActive,
+    setMonitoringInactive
+  } = useSecurity();
 
+  // Animation for active/alarm states
   useEffect(() => {
-    if (active || isAlarmActive) {
+    if (status === "security_active" || status === "alarm_triggered") {
       Animated.loop(
         Animated.sequence([
           Animated.timing(scaleAnim, {
@@ -34,40 +37,49 @@ const ShieldButton: React.FC<ShieldButtonProps> = ({ active, setActive, isAlarmA
     } else {
       scaleAnim.setValue(1);
     }
-  }, [active, isAlarmActive]);
+  }, [status]);
 
-  // Determine shield color
-  let shieldStyle = styles.shieldInactive;
-  if (isAlarmActive) {
-    shieldStyle = styles.shieldAlarm;
-  } else if (active) {
-    shieldStyle = styles.shieldActive;
-  }
-
-  // Determine status text and color
+  // Shield color and status text based on status
+  let shieldStyle = {
+    backgroundColor: "#eee",
+  };
   let statusText = "Security Inactive";
-  let statusTextStyle = styles.inactiveText;
+  let statusTextStyle = { color: "#999" };
   let helperText = "Tap to Activate";
-  let helperTextColor = myColors.primary;
+  let helperTextColor = myColors.secondary;
+  let shieldDisabled = false;
 
-  if (isAlarmActive) {
+  if (status === "alarm_triggered") {
+    shieldStyle = { backgroundColor: myColors.red, };
     statusText = "ALARM TRIGGERED";
-    statusTextStyle = styles.alarmText;
+    statusTextStyle = { color: myColors.red, };
     helperText = "Alarm Active!";
     helperTextColor = myColors.red;
-  } else if (active) {
+    shieldDisabled = true;
+  } else if (status === "security_active") {
+    shieldStyle = { backgroundColor: myColors.green, };
     statusText = "Security Active";
-    statusTextStyle = styles.activeText;
+    statusTextStyle = { color: myColors.green };
     helperText = "Tap to Deactivate";
-    helperTextColor = myColors.secondary;
+    helperTextColor = myColors.primary;
   }
+
+  // Button press logic
+  const handlePress = () => {
+    if (status === "security_inactive") {
+      setMonitoringActive();
+    } else if (status === "security_active") {
+      setMonitoringInactive();
+    }
+    // If alarm_triggered, button is disabled
+  };
 
   return (
     <View style={styles.shieldContainer}>
       <TouchableOpacity
-        onPress={() => setActive(!active)}
+        onPress={handlePress}
         activeOpacity={0.8}
-        disabled={isAlarmActive} // Optionally disable toggle when alarm is active
+        disabled={shieldDisabled}
       >
         <Animated.View
           style={[
@@ -86,7 +98,7 @@ const ShieldButton: React.FC<ShieldButtonProps> = ({ active, setActive, isAlarmA
             style={{
               width: width * 0.4,
               height: width * 0.4,
-              tintColor: !active && !isAlarmActive ? "#888" : undefined
+              tintColor: status === "security_inactive" ? "#888" : undefined
             }}
           />
         </Animated.View>
@@ -118,27 +130,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5
   },
-  shieldActive: {
-    backgroundColor: myColors.green,
-  },
-  shieldInactive: {
-    backgroundColor: "#eee",
-  },
-  shieldAlarm: {
-    backgroundColor: myColors.red,
-  },
   statusText: {
     fontSize: 22,
     fontWeight: "bold",
-  },
-  activeText: {
-    color: myColors.green
-  },
-  inactiveText: {
-    color: "#999"
-  },
-  alarmText: {
-    color: myColors.red,
   },
   helperText: {
     fontSize: 16,

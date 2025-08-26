@@ -6,32 +6,18 @@ import { myColors } from '../theme/colors'
 import HomeHeader from '../components/Home/HomeHeader';
 import ContactCard from '../components/Contacts/ContactCard';
 import AddContactModal from '../components/Contacts/AddContactModal';
+import { useSecurity } from "../context/SecurityProvider";
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const ContactsScreen = () => {
-  const [sendLocation, setsendLocation] = useState(false);
-  const [sendPhotos, setsendPhotos] = useState(false);
-  const [sendEventDetails, setsendEventDetails] = useState(false);
+  const { contacts, setContacts } = useSecurity();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newSendLocation, setNewSendLocation] = useState(false);
   const [newSendPhotos, setNewSendPhotos] = useState(false);
   const [newSendEventDetails, setNewSendEventDetails] = useState(false);
-
-  type Contact = {
-    email: string;
-    sendLocation: boolean;
-    setSendLocation: (v: boolean) => void;
-    sendPhotos: boolean;
-    setSendPhotos: (v: boolean) => void;
-    sendEventDetails: boolean;
-    setSendEventDetails: (v: boolean) => void;
-    onDelete?: () => void;
-  };
-  
-  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const handleAddContact = () => {
     setModalVisible(true);
@@ -44,13 +30,8 @@ const ContactsScreen = () => {
       {
         email: newEmail,
         sendLocation: newSendLocation,
-        setSendLocation: setNewSendLocation,
         sendPhotos: newSendPhotos,
-        setSendPhotos: setNewSendPhotos,
         sendEventDetails: newSendEventDetails,
-        setSendEventDetails: setNewSendEventDetails,
-        onDelete: () => {
-        },
       }
     ]);
     setModalVisible(false);
@@ -58,6 +39,10 @@ const ContactsScreen = () => {
     setNewSendLocation(false);
     setNewSendPhotos(false);
     setNewSendEventDetails(false);
+  };
+
+  const handleDeleteContact = (index: number) => {
+    setContacts(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -69,7 +54,7 @@ const ContactsScreen = () => {
             nameLogoSource={require('../assets/contactsLogo.png')}
             style={{ width: width * 0.65, marginLeft: width * 0.02 }}
           />
-          <View >
+          <View>
             {contacts.length === 0 ? (
               <Text style={{ textAlign: 'center', color: myColors.primary, fontSize: 16 }}>
                 No contacts yet.
@@ -80,12 +65,9 @@ const ContactsScreen = () => {
                   key={index}
                   email={contact.email}
                   sendLocation={contact.sendLocation}
-                  setSendLocation={contact.setSendLocation}
                   sendPhotos={contact.sendPhotos}
-                  setSendPhotos={contact.setSendPhotos}
                   sendEventDetails={contact.sendEventDetails}
-                  setSendEventDetails={contact.setSendEventDetails}
-                  onDelete={contact.onDelete}
+                  onDelete={() => handleDeleteContact(index)}
                 />
               ))
             )}
@@ -115,16 +97,9 @@ const ContactsScreen = () => {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-  },
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
+  safeArea: { flex: 1 },
+  scrollViewContent: { flexGrow: 1 },
+  container: { paddingHorizontal: 20, paddingTop: 10 },
   fab: {
     position: 'absolute',
     right: 24,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, Modal, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { myColors } from "../../theme/colors";
@@ -29,98 +29,95 @@ const AddContactModal: React.FC<AddContactModalProps> = ({
     setSendPhotos,
     sendEventDetails,
     setSendEventDetails,
-}) => (
-    <Modal
-        visible={visible}
-        animationType="slide"
-        transparent
-        onRequestClose={onClose}
-    >
-        <View style={[styles.modalOverlay, {
-            backgroundColor: myColors.modalOverlay,
-        }]}>
-            <View style={[styles.modalContent, {
-                backgroundColor: myColors.background, borderColor: myColors.primary,
+}) => {
+    const [error, setError] = useState("");
 
-            }]}>
-                <Text style={[styles.modalTitle, {
-                    color: myColors.secondary,
-                }]}>Add Contact</Text>
-                <TextInput
-                    style={[styles.input, {
-                        borderColor: myColors.primary, color: myColors.secondary,
+    // Simple email validation regex
+    const validateEmail = (value: string) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-                    }]}
-                    placeholder="Enter email"
-                    placeholderTextColor={myColors.secondary}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
-                <View style={styles.checkboxRow}>
-                    <TouchableOpacity
-                        style={styles.checkbox}
-                        onPress={() => setSendLocation(!sendLocation)}
-                    >
-                        <Icon
-                            name={sendLocation ? "check-box" : "check-box-outline-blank"}
-                            size={22}
-                            color={myColors.secondary}
-                        />
-                        <Text style={[styles.checkboxLabel, {
-                            color: myColors.primary,
-                        }]}>Send Location</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.checkbox}
-                        onPress={() => setSendPhotos(!sendPhotos)}
-                    >
-                        <Icon
-                            name={sendPhotos ? "check-box" : "check-box-outline-blank"}
-                            size={22}
-                            color={myColors.secondary}
-                        />
-                        <Text style={[styles.checkboxLabel, {
-                            color: myColors.primary,
-                        }]}>Send Photos</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.checkbox}
-                        onPress={() => setSendEventDetails(!sendEventDetails)}
-                    >
-                        <Icon
-                            name={sendEventDetails ? "check-box" : "check-box-outline-blank"}
-                            size={22}
-                            color={myColors.secondary}
-                        />
-                        <Text style={[styles.checkboxLabel, {
-                            color: myColors.primary,
-                        }]}>Send Event Details</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.modalButtonRow}>
-                    <TouchableOpacity style={[styles.modalButton, {
-                        backgroundColor: myColors.red, borderColor: myColors.secondary,
+    const handleSave = () => {
+        if (!validateEmail(email)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+        setError("");
+        onSave();
+    };
 
-                    }]} onPress={onClose}>
-                        <Text style={[styles.modalButtonText, {
-                            color: myColors.background
-                        }]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalButton, {
-                        backgroundColor: myColors.background, borderColor: myColors.secondary,
-
-                    }]} onPress={onSave}>
-                        <Text style={[styles.modalButtonText, {
-                            color: myColors.primary,
-                        }]}>Save</Text>
-                    </TouchableOpacity>
+    return (
+        <Modal
+            visible={visible}
+            animationType="slide"
+            transparent
+            onRequestClose={onClose}
+        >
+            <View style={[styles.modalOverlay, { backgroundColor: myColors.modalOverlay }]}>
+                <View style={[styles.modalContent, { backgroundColor: myColors.background, borderColor: myColors.primary }]}>
+                    <Text style={[styles.modalTitle, { color: myColors.secondary }]}>Add Contact</Text>
+                    <TextInput
+                        style={[styles.input, { borderColor: myColors.primary, color: myColors.secondary }]}
+                        placeholder="Enter email"
+                        placeholderTextColor={myColors.secondary}
+                        value={email}
+                        onChangeText={text => {
+                            setEmail(text);
+                            if (error) setError("");
+                        }}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                    {error ? (
+                        <Text style={{ color: myColors.red, marginBottom: 8, textAlign: 'center' }}>{error}</Text>
+                    ) : null}
+                    <View style={styles.checkboxRow}>
+                        <TouchableOpacity
+                            style={styles.checkbox}
+                            onPress={() => setSendLocation(!sendLocation)}
+                        >
+                            <Icon
+                                name={sendLocation ? "check-box" : "check-box-outline-blank"}
+                                size={22}
+                                color={myColors.secondary}
+                            />
+                            <Text style={[styles.checkboxLabel, { color: myColors.primary }]}>Send Location</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.checkbox}
+                            onPress={() => setSendPhotos(!sendPhotos)}
+                        >
+                            <Icon
+                                name={sendPhotos ? "check-box" : "check-box-outline-blank"}
+                                size={22}
+                                color={myColors.secondary}
+                            />
+                            <Text style={[styles.checkboxLabel, { color: myColors.primary }]}>Send Photos</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.checkbox}
+                            onPress={() => setSendEventDetails(!sendEventDetails)}
+                        >
+                            <Icon
+                                name={sendEventDetails ? "check-box" : "check-box-outline-blank"}
+                                size={22}
+                                color={myColors.secondary}
+                            />
+                            <Text style={[styles.checkboxLabel, { color: myColors.primary }]}>Send Event Details</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.modalButtonRow}>
+                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.red, borderColor: myColors.secondary }]} onPress={onClose}>
+                            <Text style={[styles.modalButtonText, { color: myColors.background }]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: myColors.background, borderColor: myColors.secondary }]} onPress={handleSave}>
+                            <Text style={[styles.modalButtonText, { color: myColors.primary }]}>Save</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
-        </View>
-    </Modal>
-);
+        </Modal>
+    );
+};
 
 const styles = StyleSheet.create({
     modalOverlay: {
@@ -144,11 +141,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 10,
         padding: 10,
-        marginBottom: 20,
         fontSize: 16,
     },
     checkboxRow: {
         marginBottom: 15,
+        marginTop: 20,
     },
     checkbox: {
         flexDirection: 'row',

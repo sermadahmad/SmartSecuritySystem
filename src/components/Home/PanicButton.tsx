@@ -7,22 +7,44 @@ import {
   Animated,
 } from "react-native";
 import { myColors } from "../../theme/colors";
+import { useSecurity } from "../../context/SecurityProvider";
+import { alarmSounds } from "../../utils/alarmSounds";
+import { setupAlarmPlayer, startAlarm, stopAlarm } from "../../utils/alarmPlayer";
+import TrackPlayer from "react-native-track-player";
+import { getGoogleMapsLink } from "../../utils/locationService";
+import { captureSecurityPhotos } from "../../utils/cameraCapture";
+import { startForegroundService } from "../../utils/foregroundService";
+import { useForegroundService } from "../../context/ForegroundServiceContext";
 
-type PanicButtonProps = {
-  alarmTriggered: boolean;
-  setAlarmTriggered: (value: boolean) => void;
-};
+const PanicButton = () => {
+  const {
+    settings: {
+      selectedDuration,
+      selectedSound,
+      alarmVolume,
+    },
+    setAlarmTriggered,
+    setMonitoringActive,
+    eventLogs,
+    setEventLogs,
+    setLocation,
+  } = useSecurity();
 
-const PanicButton: React.FC<PanicButtonProps> = ({ alarmTriggered, setAlarmTriggered }) => {
+  const foregroundService = useForegroundService();
+
   const [triggered, setTriggered] = useState(false);
+  const [alarmActive, setAlarmActive] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
   const holdTime = 2000; // 2 seconds
 
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const startHold = () => {
-    if (alarmTriggered) {
-      setAlarmTriggered(false);
+    if (alarmActive) {
+      // Stop alarm and reset status
+      stopAlarm();
+      setAlarmActive(false);
+      setMonitoringActive();
       setTriggered(false);
       progress.setValue(0);
       return;
@@ -32,12 +54,59 @@ const PanicButton: React.FC<PanicButtonProps> = ({ alarmTriggered, setAlarmTrigg
       duration: holdTime,
       useNativeDriver: false,
     });
-    animationRef.current.start(({ finished }) => {
+    animationRef.current.start(async ({ finished }) => {
       if (finished) {
         setTriggered(true);
-        setAlarmTriggered(true);
-        console.log("Panic Activated!");
-        // TODO: trigger alarm, send photos, etc.
+        setAlarmActive(true);
+        setAlarmTriggered();
+        // --- Panic logic: play alarm, capture photos, get location, store event log ---
+        const selectedSoundObj = alarmSounds.find(s => s.label === selectedSound) || alarmSounds[0];
+        await setupAlarmPlayer(selectedSoundObj.file, selectedSoundObj.label);
+        await TrackPlayer.setVolume(alarmVolume);
+        await startAlarm();
+
+        // Play for selected duration (if not infinite)
+        if (selectedDuration > 0) {
+          setTimeout(() => {
+            stopAlarm();
+            setAlarmActive(false);
+            setMonitoringActive();
+            setTriggered(false);
+            progress.setValue(0);
+          }, selectedDuration * 1000);
+        }
+
+        let locationLink: string | null = null;
+        let photoResult: string[] = [];
+        try {
+          if (foregroundService) {
+            await startForegroundService(foregroundService);
+          }
+          locationLink = await getGoogleMapsLink();
+          if (locationLink) {
+            setLocation(locationLink);
+          }
+          photoResult = await captureSecurityPhotos();
+        } catch (error) {
+          console.error('PanicButton: Error during panic response:', error);
+        } finally {
+          if (foregroundService && foregroundService.stopService) {
+            await foregroundService.stopService();
+          }
+        }
+
+        // Store event log
+        const now = new Date();
+        const eventLog = {
+          date: now.toLocaleDateString(),
+          time: now.toLocaleTimeString(),
+          triggerType: 'Panic Button',
+          alarmPlayed: true,
+          location: locationLink,
+          photoURIs: photoResult,
+          alarmSound: selectedSound,
+        };
+        setEventLogs(prev => [...prev, eventLog]);
       }
     });
   };
@@ -60,13 +129,13 @@ const PanicButton: React.FC<PanicButtonProps> = ({ alarmTriggered, setAlarmTrigg
         onPressIn={startHold}
         onPressOut={cancelHold}
         style={[
-          alarmTriggered || triggered ? styles.alarmButton : styles.button
+          alarmActive || triggered ? styles.alarmButton : styles.button
         ]}
       >
-        <Text style={[styles.buttonText, (alarmTriggered || triggered) && { color: myColors.red }]}>
-          {(alarmTriggered || triggered) ? "PANIC TRIGGERED !" : "HOLD TO PANIC"}
+        <Text style={[styles.buttonText, (alarmActive || triggered) && { color: myColors.red }]}>
+          {(alarmActive || triggered) ? "PANIC TRIGGERED !" : "HOLD TO PANIC"}
         </Text>
-        {!(alarmTriggered || triggered) && (
+        {!(alarmActive || triggered) && (
           <Animated.View
             style={[styles.progress, { width: progressWidth }]}
           />
@@ -78,7 +147,7 @@ const PanicButton: React.FC<PanicButtonProps> = ({ alarmTriggered, setAlarmTrigg
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 30,
+    marginTop: 20,
     alignItems: "center",
   },
   button: {

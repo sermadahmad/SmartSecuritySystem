@@ -5,41 +5,43 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { myColors } from '../theme/colors'
 import HomeHeader from '../components/Home/HomeHeader';
 import EventCard from '../components/Events/EventCard';
+import { useSecurity } from "../context/SecurityProvider";
 
 const { width } = Dimensions.get('window');
 
-// events data 
-const events = [
-  {
-    dateTime: new Date().toLocaleString(),
-    triggeredBy: "Unauthorized Access/ Panic Button",
-    location: "Google Maps Link",
-    alarmInfo: "Alarm Played for 2 mins.",
-    frontPhoto: require('../assets/image.png'),
-    backPhoto: require('../assets/image.png'),
-  },
-  {
-    dateTime: new Date().toLocaleString(),
-    triggeredBy: "Unauthorized Access/ Panic Button",
-    location: "Google Maps Link",
-    alarmInfo: "Alarm Played for 2 mins.",
-    frontPhoto: require('../assets/image.png'),
-    backPhoto: require('../assets/image.png'),
-  },
-  {
-    dateTime: new Date().toLocaleString(),
-    triggeredBy: "Unauthorized Access/ Panic Button",
-    location: "Google Maps Link",
-    alarmInfo: "Alarm Played for 2 mins.",
-    frontPhoto: require('../assets/image.png'),
-    backPhoto: require('../assets/image.png'),
-  },
-];
-
 const EventsScreen = () => {
+  const {
+    eventLogs,
+    setEventLogs,
+  } = useSecurity();
+
   const [showTriggerDropdown, setShowTriggerDropdown] = useState(false);
-  const [selectedTrigger, setSelectedTrigger] = useState("Trigger Type");
+  const [selectedTrigger, setSelectedTrigger] = useState("Show All");
   const triggerOptions = ["Show All", "Unauthorized Access", "Panic Button"];
+
+  // Filter event logs based on selected trigger
+  const filteredLogs = selectedTrigger === "Show All"
+    ? eventLogs
+    : eventLogs.filter(log => log.triggerType === selectedTrigger);
+
+  // Sort logs by date and time (newest first)
+  const sortedLogs = [...filteredLogs].sort((a, b) => {
+    // Convert to ISO string for reliable parsing
+    const toISO = (date: string, time: string) => {
+      // Example: "8/26/2025" + "7:57:21 PM" => "2025-08-26T19:57:21"
+      const [month, day, year] = date.split('/');
+      let [timePart, ampm] = time.split(' ');
+      let [hour, minute, second] = timePart.split(':');
+      hour = ampm === 'PM' && hour !== '12' ? String(Number(hour) + 12) : hour;
+      hour = ampm === 'AM' && hour === '12' ? '00' : hour;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:${second}`;
+    };
+
+    const aDate = new Date(toISO(a.date, a.time));
+    const bDate = new Date(toISO(b.date, b.time));
+    return bDate.getTime() - aDate.getTime();
+  });
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: myColors.background }]}>
       <StatusBar barStyle="dark-content" backgroundColor={myColors.background} />
@@ -91,21 +93,31 @@ const EventsScreen = () => {
             </View>
           </View>
           <View>
-            {events.length === 0 ? (
+            {sortedLogs.length === 0 ? (
               <Text style={{ textAlign: 'center', color: myColors.primary, fontSize: 16 }}>
                 No Security events recorded yet.
               </Text>
             ) : (
-              events.map((event, index) => (
+              sortedLogs.map((event, index) => (
                 <EventCard
                   key={index}
-                  dateTime={event.dateTime}
-                  triggeredBy={event.triggeredBy}
+                  dateTime={`${event.date} ${event.time}`}
+                  triggeredBy={event.triggerType}
                   location={event.location}
-                  alarmInfo={event.alarmInfo}
-                  frontPhoto={event.frontPhoto}
-                  backPhoto={event.backPhoto}
-                  onDelete={() => console.log("Delete event", index)}
+                  alarmSound={event.alarmSound}
+                  frontPhoto={
+                    event.photoURIs?.[0]
+                      ? { uri: event.photoURIs[0].startsWith('file://') ? event.photoURIs[0] : `file://${event.photoURIs[0]}` }
+                      : require('../assets/image.png')
+                  }
+                  backPhoto={
+                    event.photoURIs?.[1]
+                      ? { uri: event.photoURIs[1].startsWith('file://') ? event.photoURIs[1] : `file://${event.photoURIs[1]}` }
+                      : require('../assets/image.png')
+                  }
+                  onDelete={() => {
+                    setEventLogs(prev => prev.filter((_, i) => i !== index));
+                  }}
                 />
               ))
             )}

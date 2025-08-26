@@ -4,11 +4,10 @@ import { myColors } from "../../theme/colors";
 
 type ContactActionButtonProps = {
   active: boolean;
-  onPress: () => void;
   label: string;
 };
 
-const ContactActionButton: React.FC<ContactActionButtonProps> = ({ active, onPress, label }) => (
+const ContactActionButton: React.FC<ContactActionButtonProps> = ({ active, label }) => (
   <TouchableOpacity
     style={[
       styles.button,
@@ -16,7 +15,7 @@ const ContactActionButton: React.FC<ContactActionButtonProps> = ({ active, onPre
         ? { backgroundColor: myColors.tertiary, borderColor: myColors.secondary }
         : { backgroundColor: myColors.background, borderColor: myColors.secondary }
     ]}
-    onPress={onPress}
+    // onPress={onPress}
   >
     <Text
       style={[

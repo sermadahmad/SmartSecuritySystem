@@ -3,91 +3,109 @@ import BackgroundTimer from 'react-native-background-timer';
 import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
 import useDeviceLock from '../customHooks/DeviceLock';
 import useIsStationary from '../customHooks/useIsStationary';
-import {  getGoogleMapsLink } from '../utils/locationService';
+import { getGoogleMapsLink } from '../utils/locationService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
 import { startForegroundService } from '../utils/foregroundService';
 import { captureSecurityPhotos } from '../utils/cameraCapture';
+import { MonitoringStatus } from './usePersistentState';
+import { alarmSounds } from '../utils/alarmSounds';
+import TrackPlayer from 'react-native-track-player';
+import { EventLog } from '../context/SecurityProvider';
 
-export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link: string | null) => void) => {
+
+export const useSecurityLogic = (
+    settings: {
+        status: MonitoringStatus;
+        alarmDelay: number;
+        lockDelay: number;
+        selectedSound: string;
+        alarmVolume: number;
+        selectedDuration: number;
+        sendLocation: boolean;
+        sendPhotos: boolean;
+        sendEventDetails: boolean;
+        playAlarm: boolean;
+    },
+    setLocation: (link: string | null) => void,
+    eventLogs: EventLog[],
+    setEventLogs: React.Dispatch<React.SetStateAction<EventLog[]>>
+) => {
     const isLocked = useDeviceLock() ?? false;
     const isStationary = useIsStationary();
-    // const isStationary = true; // For testing purposes, always set to true
     const [securityActivated, setSecurityActivated] = useState(false);
-    const securityTimer = useRef<number | null>(null);
-    const alarmTimer = useRef<number | null>(null);
+    const lockDelayTimer = useRef<number | null>(null);
+    const alarmDelayTimer = useRef<number | null>(null);
     const foregroundService = useForegroundService();
-    // const { setLocation } = useSecurity(); // This line is removed as per the edit hint
-
-    useEffect(() => {
-        (async () => {
-            await setupAlarmPlayer();
-        })();
-
-        return () => {
-            stopAlarm();
-        };
-    }, []);
 
     useEffect(() => {
         BackgroundTimer.start();
         return () => {
             BackgroundTimer.stop();
-            if (securityTimer.current) BackgroundTimer.clearTimeout(securityTimer.current);
-            if (alarmTimer.current) BackgroundTimer.clearTimeout(alarmTimer.current);
+            if (lockDelayTimer.current) BackgroundTimer.clearTimeout(lockDelayTimer.current);
+            if (alarmDelayTimer.current) BackgroundTimer.clearTimeout(alarmDelayTimer.current);
         };
     }, []);
 
     useEffect(() => {
-        if (monitoringEnabled && !securityActivated) {
+        if (settings.status === 'security_active' && !securityActivated) {
             if (isLocked && isStationary) {
-                if (!securityTimer.current) {
-                    console.log('Starting security timer...');
-                    securityTimer.current = BackgroundTimer.setTimeout(() => {
+                if (!lockDelayTimer.current) {
+                    console.log('Starting lock delay timer...');
+                    lockDelayTimer.current = BackgroundTimer.setTimeout(() => {
                         console.log('Security Activated');
                         setSecurityActivated(true);
-                    }, 5000);
+                    }, settings.lockDelay * 1000);
                 }
             } else {
-                if (securityTimer.current) {
-                    console.log('Clearing security timer...');
-                    BackgroundTimer.clearTimeout(securityTimer.current);
-                    securityTimer.current = null;
+                if (lockDelayTimer.current) {
+                    console.log('Clearing lock delay timer...');
+                    BackgroundTimer.clearTimeout(lockDelayTimer.current);
+                    lockDelayTimer.current = null;
                 }
                 setSecurityActivated(false);
             }
         }
-    }, [isLocked, isStationary, monitoringEnabled]);
+    }, [isLocked, isStationary, settings.status, settings.lockDelay]);
 
     useEffect(() => {
         if (securityActivated) {
             if (!isStationary) {
-                if (!alarmTimer.current) {
-                    console.log('Starting alarm timer...');
-                    alarmTimer.current = BackgroundTimer.setTimeout(async () => {
+                if (!alarmDelayTimer.current) {
+                    console.log('Starting alarm delay timer...');
+                    alarmDelayTimer.current = BackgroundTimer.setTimeout(async () => {
                         if (isLocked) {
                             console.log('Alarm Triggered!');
-                            startAlarm();
+                            const selectedSoundObj = alarmSounds.find(s => s.label === settings.selectedSound) || alarmSounds[0];
+                            await setupAlarmPlayer(selectedSoundObj.file, selectedSoundObj.label);
+                            await TrackPlayer.setVolume(settings.alarmVolume);
+                            await startAlarm();
 
-                            // Start foreground service, get location, capture photos, then stop service
+                            // Play for selected duration (if not infinite)
+                            if (settings.selectedDuration > 0) {
+                                BackgroundTimer.setTimeout(() => {
+                                    stopAlarm();
+                                    if (alarmDelayTimer.current) BackgroundTimer.clearTimeout(alarmDelayTimer.current);
+                                    alarmDelayTimer.current = null;
+                                    setSecurityActivated(false);
+                                }, settings.selectedDuration * 1000);
+                            }
+
+                            let locationLink: string | null = null;
+                            let photoResult: string[] = [];
                             try {
                                 if (foregroundService) {
                                     await startForegroundService(foregroundService);
                                 }
-                                
-                                // Get location
-                                const link = await getGoogleMapsLink();
-                                if (link) {
-                                    setLocation(link);
-                                    console.log('Google Maps Link after alarm:', link);
+                                locationLink = await getGoogleMapsLink();
+                                if (locationLink) {
+                                    setLocation(locationLink);
+                                    console.log('Google Maps Link after alarm:', locationLink);
                                 } else {
                                     console.warn('Location not available after alarm');
                                 }
-
-                                // Automatically capture security photos
                                 console.log('Starting automatic security photo capture...');
-                                const photoResult = await captureSecurityPhotos();
-                                console.log('Security photos captured:', photoResult);
-                                
+                                photoResult = await captureSecurityPhotos();
+                                // console.log('Security photos captured:', photoResult);
                             } catch (error) {
                                 console.error('Error during security response:', error);
                             } finally {
@@ -96,14 +114,29 @@ export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link:
                                     console.log('Foreground service stopped after alarm');
                                 }
                             }
+
+                            // Store event log
+                            const now = new Date();
+                            const eventLog: EventLog = {
+                                date: now.toLocaleDateString(),
+                                time: now.toLocaleTimeString(),
+                                triggerType: 'Unauthorized Access',
+                                alarmPlayed: true,
+                                location: locationLink,
+                                photoURIs: photoResult,
+                                alarmSound: settings.selectedSound,
+                            };
+                            console.log('Event Log:', eventLog);
+                            // console.log('Photo URIs:', eventLog.photoURIs);
+                            setEventLogs(prev => [...prev, eventLog]);
                         } else {
                             console.log('Device Unlocked. Alarm Stopped.');
                             stopAlarm();
-                            if (alarmTimer.current) BackgroundTimer.clearTimeout(alarmTimer.current);
-                            alarmTimer.current = null;
+                            if (alarmDelayTimer.current) BackgroundTimer.clearTimeout(alarmDelayTimer.current);
+                            alarmDelayTimer.current = null;
                             setSecurityActivated(false);
                         }
-                    }, 5000);
+                    }, settings.alarmDelay * 1000);
                 }
             }
 
@@ -111,17 +144,17 @@ export const useSecurityLogic = (monitoringEnabled: boolean, setLocation: (link:
                 console.log('Device Unlocked. Security Deactivated.');
                 setSecurityActivated(false);
                 stopAlarm();
-                if (securityTimer.current) {
-                    BackgroundTimer.clearTimeout(securityTimer.current);
-                    securityTimer.current = null;
+                if (lockDelayTimer.current) {
+                    BackgroundTimer.clearTimeout(lockDelayTimer.current);
+                    lockDelayTimer.current = null;
                 }
-                if (alarmTimer.current) {
-                    BackgroundTimer.clearTimeout(alarmTimer.current);
-                    alarmTimer.current = null;
+                if (alarmDelayTimer.current) {
+                    BackgroundTimer.clearTimeout(alarmDelayTimer.current);
+                    alarmDelayTimer.current = null;
                 }
             }
         }
-    }, [securityActivated, isLocked, isStationary]);
+    }, [securityActivated, isLocked, isStationary, settings.alarmDelay]);
 
     return { securityActivated };
 };

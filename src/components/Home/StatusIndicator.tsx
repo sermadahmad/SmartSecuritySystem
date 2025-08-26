@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import useIsStationary from '../customHooks/useIsStationary';
+import useIsStationary from '../../customHooks/useIsStationary';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { myColors } from '../theme/colors';
+import { myColors } from '../../theme/colors';
 
 const StatusIndicator = () => {
     const isStationary = useIsStationary();

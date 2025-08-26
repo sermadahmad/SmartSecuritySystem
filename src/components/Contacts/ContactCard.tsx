@@ -7,22 +7,16 @@ import ContactActionButton from "./ContactActionButton";
 type ContactCardProps = {
     email: string;
     sendLocation: boolean;
-    setSendLocation: (v: boolean) => void;
     sendPhotos: boolean;
-    setSendPhotos: (v: boolean) => void;
     sendEventDetails: boolean;
-    setSendEventDetails: (v: boolean) => void;
     onDelete?: () => void;
 };
 
 const ContactCard: React.FC<ContactCardProps> = ({
     email,
     sendLocation,
-    setSendLocation,
     sendPhotos,
-    setSendPhotos,
     sendEventDetails,
-    setSendEventDetails,
     onDelete,
 }) => (
     <View style={[styles.card, {
@@ -40,17 +34,17 @@ const ContactCard: React.FC<ContactCardProps> = ({
         <View style={styles.actionRow}>
             <ContactActionButton
                 active={sendLocation}
-                onPress={() => setSendLocation(!sendLocation)}
+                // onPress={() => setSendLocation(!sendLocation)}
                 label="Send Location"
             />
             <ContactActionButton
                 active={sendPhotos}
-                onPress={() => setSendPhotos(!sendPhotos)}
+                // onPress={() => setSendPhotos(!sendPhotos)}
                 label="Send Photos"
             />
             <ContactActionButton
                 active={sendEventDetails}
-                onPress={() => setSendEventDetails(!sendEventDetails)}
+                // onPress={() => setSendEventDetails(!sendEventDetails)}
                 label="Send Event Details"
             />
         </View>
