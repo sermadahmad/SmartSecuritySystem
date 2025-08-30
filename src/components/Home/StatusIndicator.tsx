@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import useIsStationary from '../../customHooks/useIsStationary';
+import useIsStationary from '../../hooks/useIsStationary';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { myColors } from '../../theme/colors';
 

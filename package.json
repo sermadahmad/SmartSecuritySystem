@@ -18,6 +18,7 @@
     "@react-navigation/native": "^7.1.9",
     "@react-navigation/stack": "^7.1.2",
     "@voximplant/react-native-foreground-service": "^3.0.2",
+    "emailjs-com": "^3.2.0",
     "react": "18.3.1",
     "react-native": "0.77.1",
     "react-native-background-timer": "^2.4.1",

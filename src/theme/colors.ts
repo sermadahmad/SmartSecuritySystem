@@ -1,13 +1,3 @@
-const lightTheme = {
-  primary: '#000000',
-  secondary: '#FFFFFF',
-};
-
-const darkTheme = {
-  primary: '#FFFFFF',
-  secondary: '#000000',
-};
-
 export const myColors = {
   primary: "#0076DD",
   secondary: "#E600E9",
@@ -18,8 +8,3 @@ export const myColors = {
   red: "#E53935",
   modalOverlay: "rgba(0, 0, 0, 0.3)",
 };
-
-
-const colors = { light: lightTheme, dark: darkTheme };
-
-export default colors;

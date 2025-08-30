@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import BackgroundTimer from 'react-native-background-timer';
 import { setupAlarmPlayer, startAlarm, stopAlarm } from '../utils/alarmPlayer';
-import useDeviceLock from '../customHooks/DeviceLock';
-import useIsStationary from '../customHooks/useIsStationary';
+import useDeviceLock from './DeviceLock';
+import useIsStationary from './useIsStationary';
 import { getGoogleMapsLink } from '../utils/locationService';
 import { useForegroundService } from '../context/ForegroundServiceContext';
 import { startForegroundService } from '../utils/foregroundService';

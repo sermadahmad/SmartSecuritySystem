@@ -18,6 +18,8 @@ import { useForegroundService } from "../../context/ForegroundServiceContext";
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { EventLog } from '../../context/SecurityProvider'; // Import your EventLog type
+import emailjs from "emailjs-com";
+import { sendEventEmail } from "../../utils/sendEventEmail";
 
 const PanicButton = () => {
   const {
@@ -30,6 +32,7 @@ const PanicButton = () => {
     setMonitoringActive,
     setEventLogs,
     setLocation,
+    contacts
   } = useSecurity();
 
   const foregroundService = useForegroundService();
@@ -115,13 +118,18 @@ const PanicButton = () => {
         try {
           if (userId) {
             const db = getFirestore();
-            // Remove 'id' before saving
             const { id, ...eventLogData } = eventLog;
             const docRef = await addDoc(collection(db, `users/${userId}/eventLogs`), eventLogData);
             eventLog.id = docRef.id; // Set Firestore doc ID
+
+            // for (const contact of contacts) {
+            //   if (contact.email) {
+            //     await sendEventEmail(contact, eventLog);
+            //   }
+            // }
           }
         } catch (error) {
-          console.error('Error saving event log to Firestore:', error);
+          console.error('Error saving event log to Firestore or sending email:', error);
         }
 
         setEventLogs(prev => [...prev, eventLog]);
