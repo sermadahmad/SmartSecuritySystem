@@ -10,9 +10,10 @@ import { captureSecurityPhotos } from '../utils/cameraCapture';
 import { MonitoringStatus } from './usePersistentState';
 import { alarmSounds } from '../utils/alarmSounds';
 import TrackPlayer from 'react-native-track-player';
-import { EventLog } from '../context/SecurityProvider';
+import { EventLog, Contact } from '../context/SecurityProvider';
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { usePersistentState } from '../hooks/usePersistentState';
+import { sendSecurityAlertToContacts } from '../api/apiService';
 
 
 export const useSecurityLogic = (
@@ -30,7 +31,8 @@ export const useSecurityLogic = (
     },
     setLocation: (link: string | null) => void,
     eventLogs: EventLog[],
-    setEventLogs: React.Dispatch<React.SetStateAction<EventLog[]>>
+    setEventLogs: React.Dispatch<React.SetStateAction<EventLog[]>>,
+    contacts: Contact[]
 ) => {
     const isLocked = useDeviceLock() ?? false;
     const isStationary = useIsStationary();
@@ -139,9 +141,29 @@ export const useSecurityLogic = (
                                     const { id, ...eventLogData } = eventLog;
                                     const docRef = await addDoc(collection(db, `users/${userId}/eventLogs`), eventLogData);
                                     eventLog.id = docRef.id; // Set Firestore doc ID
+
+                                    // Send security alert to contacts via API
+                                    console.log('useSecurityLogic: Sending unauthorized access alerts to contacts...');
+                                    const alertData = {
+                                        eventType: 'Unauthorized Access',
+                                        date: now.toLocaleDateString(),
+                                        time: now.toLocaleTimeString(),
+                                        location: locationLink,
+                                        photoURIs: photoResult,
+                                        userId: userId,
+                                        contacts: contacts
+                                    };
+
+                                    const apiResponse = await sendSecurityAlertToContacts(alertData);
+                                    
+                                    if (apiResponse.success) {
+                                        console.log(`useSecurityLogic: Successfully sent ${apiResponse.emailsSent} security alerts`);
+                                    } else {
+                                        console.error('useSecurityLogic: Failed to send security alerts:', apiResponse.message);
+                                    }
                                 }
                             } catch (error) {
-                                console.error('Error saving event log to Firestore:', error);
+                                console.error('Error saving event log to Firestore or sending security alerts:', error);
                             }
 
                             setEventLogs(prev => [...prev, eventLog]);

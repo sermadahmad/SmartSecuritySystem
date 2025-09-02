@@ -37,10 +37,6 @@ type SecurityContextType = {
         selectedSound: string;
         alarmVolume: number;
         selectedDuration: number;
-        sendLocation: boolean;
-        sendPhotos: boolean;
-        sendEventDetails: boolean;
-        playAlarm: boolean;
     };
     setMonitoringActive: () => void;
     setMonitoringInactive: () => void;
@@ -50,10 +46,6 @@ type SecurityContextType = {
     setSelectedSound: (sound: string) => void;
     setAlarmVolume: (volume: number) => void;
     setSelectedDuration: (duration: number) => void;
-    setSendLocation: (value: boolean) => void;
-    setSendPhotos: (value: boolean) => void;
-    setSendEventDetails: (value: boolean) => void;
-    setPlayAlarm: (value: boolean) => void;
     resetSettings: () => void;
     eventLogs: EventLog[];
     setEventLogs: React.Dispatch<React.SetStateAction<EventLog[]>>;
@@ -75,10 +67,6 @@ export const SecurityProvider = ({ children }: { children: ReactNode }) => {
         setSelectedSound,
         setAlarmVolume,
         setSelectedDuration,
-        setSendLocation,
-        setSendPhotos,
-        setSendEventDetails,
-        setPlayAlarm,
         resetSettings
     } = usePersistentState();
     const [location, setLocation] = useState<string | null>(null);
@@ -89,6 +77,7 @@ export const SecurityProvider = ({ children }: { children: ReactNode }) => {
         setLocation,
         eventLogs,
         setEventLogs,
+        contacts
     );
     const { theme, toggleTheme } = useTheme();
 
@@ -109,10 +98,6 @@ export const SecurityProvider = ({ children }: { children: ReactNode }) => {
             setSelectedSound,
             setAlarmVolume,
             setSelectedDuration,
-            setSendLocation,
-            setSendPhotos,
-            setSendEventDetails,
-            setPlayAlarm,
             resetSettings,
             eventLogs,
             setEventLogs,

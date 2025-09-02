@@ -18,8 +18,8 @@ import { useForegroundService } from "../../context/ForegroundServiceContext";
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { usePersistentState } from '../../hooks/usePersistentState';
 import { EventLog } from '../../context/SecurityProvider'; // Import your EventLog type
-import emailjs from "emailjs-com";
-import { sendEventEmail } from "../../utils/sendEventEmail";
+import { sendSecurityAlertToContacts } from '../../api/apiService';
+import { showSuccess, showError } from '../../utils/notifications';
 
 const PanicButton = () => {
   const {
@@ -98,6 +98,7 @@ const PanicButton = () => {
         } finally {
           if (foregroundService && foregroundService.stopService) {
             await foregroundService.stopService();
+            console.log('PanicButton: Foreground service stopped');
           }
         }
 
@@ -116,20 +117,46 @@ const PanicButton = () => {
         };
 
         try {
+          console.log('PanicButton: Saving event log to Firestore...');
           if (userId) {
             const db = getFirestore();
             const { id, ...eventLogData } = eventLog;
+            console.log('PanicButton: Event log data to save:', eventLogData);
             const docRef = await addDoc(collection(db, `users/${userId}/eventLogs`), eventLogData);
             eventLog.id = docRef.id; // Set Firestore doc ID
 
-            // for (const contact of contacts) {
-            //   if (contact.email) {
-            //     await sendEventEmail(contact, eventLog);
-            //   }
-            // }
+            // Send security alert to contacts via API
+            console.log('PanicButton: Sending security alerts to contacts...');
+            const alertData = {
+              eventType: 'Panic Button',
+              date: now.toLocaleDateString(),
+              time: now.toLocaleTimeString(),
+              location: locationLink,
+              photoURIs: photoResult,
+              userId: userId,
+              contacts: contacts
+            };
+
+            const apiResponse = await sendSecurityAlertToContacts(alertData);
+            
+            if (apiResponse.success) {
+              console.log(`PanicButton: Successfully sent ${apiResponse.emailsSent} security alerts`);
+              if (apiResponse.emailsSent && apiResponse.emailsSent > 0) {
+                showSuccess(
+                  'Security Alerts Sent', 
+                  `Emergency alerts sent to ${apiResponse.emailsSent} contact(s)`
+                );
+              }
+            } else {
+              console.error('PanicButton: Failed to send security alerts:', apiResponse.message);
+              showError(
+                'Alert Failed', 
+                'Failed to send emergency alerts. Please check your connection.'
+              );
+            }
           }
         } catch (error) {
-          console.error('Error saving event log to Firestore or sending email:', error);
+          console.error('Error saving event log to Firestore or sending security alerts:', error);
         }
 
         setEventLogs(prev => [...prev, eventLog]);

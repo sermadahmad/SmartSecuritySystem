@@ -47,3 +47,8 @@ Remote control via a companion app
 In summary, my mobile security app offers a proactive and customizable solution to protect users’ devices and personal safety. It combines theft deterrence, real-time alerts, and user-centric controls into one seamless experience.
 
 Thank you for your time, and I look forward to any feedback or suggestions to improve my project.
+
+Patches: 
+    @voximplant/react-native-foreground-service
+    change compile sdk version to 35 
+    remove buildToolsVersion

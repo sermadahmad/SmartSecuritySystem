@@ -30,10 +30,6 @@ const SettingsScreen = () => {
     setSelectedSound,
     setAlarmVolume,
     setSelectedDuration,
-    setSendLocation,
-    setSendPhotos,
-    setSendEventDetails,
-    setPlayAlarm,
     resetSettings,
     setEventLogs,
   } = useSecurity();
@@ -49,10 +45,6 @@ const SettingsScreen = () => {
   const selectedSound = alarmSounds.find(s => s.label === settings.selectedSound) || alarmSounds[0];
   const alarmVolume = settings.alarmVolume;
   const selectedDuration = playDurations.find(d => d.value === settings.selectedDuration) || playDurations[0];
-  const sendLocation = settings.sendLocation;
-  const sendPhotos = settings.sendPhotos;
-  const sendEventDetails = settings.sendEventDetails;
-  const playAlarm = settings.playAlarm;
 
   const handleIncrementAlarmDelay = () => setAlarmDelay(alarmDelay + 1);
   const handleDecrementAlarmDelay = () => setAlarmDelay(alarmDelay > 0 ? alarmDelay - 1 : 0);
@@ -272,74 +264,6 @@ const SettingsScreen = () => {
                 </Text>
               </View>
             </>
-          </View>
-          <View style={{
-            backgroundColor: myColors.text,
-            height: 1,
-            marginBottom: 15,
-          }} />
-          <View>
-            <Text style={[styles.sectionHeaderText, { color: myColors.secondary }]}>
-              Capture & Alerts:
-            </Text>
-            <View style={styles.checkboxRow}>
-              <TouchableOpacity
-                style={styles.checkbox}
-                onPress={() => setPlayAlarm(!playAlarm)}
-              >
-                <Icon
-                  name={playAlarm ? "check-box" : "check-box-outline-blank"}
-                  size={22}
-                  color={myColors.secondary}
-                />
-                <Text style={[styles.checkboxLabel, {
-                  color: myColors.primary,
-                }]}>Play Alarm</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.checkbox}
-                onPress={() => setSendLocation(!sendLocation)}
-              >
-                <Icon
-                  name={sendLocation ? "check-box" : "check-box-outline-blank"}
-                  size={22}
-                  color={myColors.secondary}
-                />
-                <Text style={[styles.checkboxLabel, {
-                  color: myColors.primary,
-                }]}>Send Location</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.checkbox}
-                onPress={() => setSendPhotos(!sendPhotos)}
-              >
-                <Icon
-                  name={sendPhotos ? "check-box" : "check-box-outline-blank"}
-                  size={22}
-                  color={myColors.secondary}
-                />
-                <Text style={[styles.checkboxLabel, {
-                  color: myColors.primary,
-                }]}>Send Photos</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.checkbox}
-                onPress={() => setSendEventDetails(!sendEventDetails)}
-              >
-                <Icon
-                  name={sendEventDetails ? "check-box" : "check-box-outline-blank"}
-                  size={22}
-                  color={myColors.secondary}
-                />
-                <Text style={[styles.checkboxLabel, {
-                  color: myColors.primary,
-                }]}>Send Event Details</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.timerInfo, { color: myColors.secondary }]}>
-              Select what information will be sent to your emergency contacts when a security event is triggered.
-              You can choose to share your location, photos, and event details for better assistance.
-            </Text>
           </View>
           <View style={{
             backgroundColor: myColors.text,
