@@ -29,8 +29,6 @@ Smart Security System is an advanced React Native application designed to protec
 - **Frontend**: React Native with TypeScript
 - **Backend Services**: Node.js API for notifications
 - **Database**: Firebase Firestore for logs and user data
-- **Authentication**: Firebase Auth
-- **Push Notifications**: Firebase Cloud Messaging
 - **Audio**: React Native Track Player
 - **Camera**: CameraX (Android)
 - **Location**: React Native Geolocation
@@ -74,33 +72,17 @@ src/
    yarn install
    ```
 
-3. **Install iOS dependencies** (if targeting iOS)
-   ```bash
-   cd ios && pod install && cd ..
-   ```
-
-4. **Firebase Configuration**
+3. **Firebase Configuration**
    - Create a Firebase project
    - Download `google-services.json` and place in `android/app/`
-   - Download `GoogleService-Info.plist` and place in `ios/` (for iOS)
    - Update Firebase configuration in the app
 
-5. **Android Setup**
+4. **Android Setup**
    ```bash
    npx react-native run-android
    ```
 
 ### 🔧 Configuration
-
-#### Environment Variables
-Create a `.env` file in the root directory:
-
-```env
-FIREBASE_API_KEY=your_api_key
-FIREBASE_AUTH_DOMAIN=your_auth_domain
-FIREBASE_PROJECT_ID=your_project_id
-NOTIFICATION_API_URL=your_backend_api_url
-```
 
 #### Permissions
 The app requires the following permissions:
@@ -114,13 +96,12 @@ The app requires the following permissions:
 
 ### Basic Setup
 
-1. **Create Account**: Register with email/password or social login
-2. **Add Emergency Contacts**: Configure up to 5 emergency contacts
-3. **Customize Settings**: 
+1. **Add Emergency Contacts**: Configure emergency contacts
+2. **Customize Settings**: 
    - Set trigger delays (lock delay, alarm delay)
    - Choose alarm sounds and volume
    - Configure notification preferences
-4. **Activate Security**: Toggle security monitoring on/off
+3. **Activate Security**: Toggle security monitoring on/off
 
 ### Security Workflow
 
@@ -157,7 +138,6 @@ The app requires the following permissions:
 ### Security Event Logging
 - Detailed event tracking with timestamps
 - Photo storage and management
-- Export capabilities for security reports
 
 ### Emergency Notifications
 - Real-time email alerts to contacts
@@ -177,37 +157,15 @@ cd android
 ./gradlew bundleRelease
 ```
 
-### Testing
-
-```bash
-# Run unit tests
-npm test
-
-# Run integration tests
-npm run test:integration
-
-# Check code coverage
-npm run test:coverage
-```
-
-### Code Quality
-
-```bash
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-
-# Type checking
-npm run type-check
-```
-
 ## 📱 Screenshots
 
 | Home Screen | Security Settings | Event Logs | Contact Management |
 |-------------|-------------------|------------|-------------------|
-| ![Home](docs/screenshots/home.png) | ![Settings](docs/screenshots/settings.png) | ![Logs](docs/screenshots/events.png) | ![Contacts](docs/screenshots/contacts.png) |
+| ![Home](docs/screenshots/home.jpg) | ![Settings](docs/screenshots/settings.jpg) | ![Logs](docs/screenshots/logs.jpg) | ![Contacts](docs/screenshots/contacts.jpg) |
+
+### 📹 Demo Video
+
+
 
 ## 🤝 Contributing
 
@@ -227,31 +185,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Sermad Ahmad**
 - GitHub: [@sermadahmad](https://github.com/sermadahmad)
-- Email: your.email@example.com
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourusername)
+- Email: sermadahamd024@gmail.com
+- LinkedIn: [Sermad Ahmad](https://www.linkedin.com/in/sermadahmad)
 
 ## 🙏 Acknowledgments
 
 - React Native community for excellent documentation
 - Firebase team for robust backend services
-- Contributors and testers who helped improve the app
-
-## 🐛 Known Issues & Troubleshooting
-
-### Common Issues
-
-1. **Camera not working in background**
-   - Ensure `android:foregroundServiceType="camera"` is set in AndroidManifest.xml
-   - Check battery optimization settings
-
-2. **Location not updating**
-   - Verify location permissions are granted
-   - Check if background location access is enabled
-
-3. **Notifications not sending**
-   - Verify Firebase configuration
-   - Check internet connectivity
-   - Ensure notification API is accessible
 
 ### Support
 
