@@ -124,7 +124,7 @@ The app requires the following permissions:
 | Alarm Delay | Time before alarm triggers | 0-30 seconds |
 | Alarm Sound | Notification sound | 7 built-in sounds |
 | Alarm Volume | Sound intensity | 0-100% |
-| Alarm Duration | How long alarm plays | 5s - Infinite |
+| Alarm Duration | How long alarm plays | 1min - Infinite |
 | Location Sharing | Include GPS in alerts | On/Off |
 | Photo Capture | Include photos in alerts | On/Off |
 
@@ -165,11 +165,11 @@ cd android
 
 ### 📹 Demo Video
 
-
+https://github.com/user-attachments/assets/5a611202-0c8f-4c37-b04a-6e2baa0249f4
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions!
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
