@@ -1,54 +1,307 @@
-📢 Mobile Security Application Using React Native – Project Overview
+# 🛡️ Smart Security System
 
-Hello everyone,
-My name is SERMAD AHMAD, and today I’m excited to introduce my final year capstone project – a Mobile Security Application designed to enhance smartphone protection and personal safety.
+[![React Native](https://img.shields.io/badge/React%20Native-0.73+-blue.svg)](https://reactnative.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-v20+-orange.svg)](https://firebase.google.com/)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-🔑 What is the Project About?
-This project aims to develop a mobile security app using React Native, making it compatible with both Android and iOS devices. The app provides a proactive security mechanism to protect users from mobile theft and unauthorized access. What makes it unique is that it offers a fully customizable security experience tailored to user preferences.
+> A comprehensive mobile security application that provides proactive protection against unauthorized access and theft through intelligent motion detection, automated alerts, and emergency contact notifications.
 
-💡 How Does It Work?
-The app uses the phone’s sensors to detect when it’s placed idle, for example, on a table. If the phone is picked up and remains locked beyond a user-defined time, the app automatically:
+## 📱 Overview
 
-Triggers an alarm with a customizable tone and volume.
-Captures photos from both the front and back cameras.
-Sends the photos and the current location to a list of emergency contacts selected by the user.
-The key point here is that the camera and location services only activate after the trigger, ensuring privacy and conserving battery life.
+Smart Security System is an advanced React Native application designed to protect your mobile device from theft and unauthorized access. Unlike traditional security apps that only rely on lock screens, this app uses device sensors and intelligent triggers to provide real-time protection and emergency notifications.
 
-🚨 Emergency Stop for False Alarms:
-To handle false triggers, I’ve added an emergency stop feature. The user can enter a PIN to immediately stop the alarm and prevent notifications from being sent. There’s also a secure method for resetting the PIN if needed.
+### 🎯 Key Features
 
-📊 Security Logs:
-Additionally, the app maintains a log of all security events, recording details like timestamps and notification statuses. This helps users review past incidents and monitor their device’s security history.
+- **🔍 Motion Detection**: Uses accelerometer to detect when device is stationary vs. in motion
+- **📸 Automatic Camera Capture**: Takes photos from both front and back cameras when security is triggered
+- **📍 Location Tracking**: Captures and shares real-time GPS location with emergency contacts
+- **🔊 Customizable Alarms**: Multiple alarm sounds with adjustable volume and duration
+- **👥 Emergency Contacts**: Send automated alerts to predefined contacts via email
+- **📊 Security Logs**: Comprehensive logging of all security events with timestamps
+- **⚙️ Full Customization**: Adjust trigger delays, alarm settings, and notification preferences
+- **🌙 Background Operation**: Continues monitoring even when app is in background
 
-⚙️ Full Customization:
-One of the app’s biggest strengths is that it is fully customizable. Users can adjust:
+## 🏗️ Architecture
 
-Trigger time: How long before the security activates.
-Alarm settings: Including tone and volume.
-Notification preferences: Whether to send location, photos, or both.
-PIN settings: For emergency stop or false alarms.
-🛡️ Why This App Matters:
-Mobile theft and unauthorized access are common issues, and most security apps only protect the device with a lock screen. This app takes security a step further by combining real-time alerts with emergency contact notifications, giving users peace of mind and a tool to safeguard their data and privacy.
+### Technology Stack
 
-🛠️ Technologies Used:
-The app is built using:
+- **Frontend**: React Native with TypeScript
+- **Backend Services**: Node.js API for notifications
+- **Database**: Firebase Firestore for logs and user data
+- **Authentication**: Firebase Auth
+- **Push Notifications**: Firebase Cloud Messaging
+- **Audio**: React Native Track Player
+- **Camera**: CameraX (Android)
+- **Location**: React Native Geolocation
 
-React Native: For cross-platform development.
-Firebase: For real-time notifications.
-SQLite: For maintaining security logs.
-Device Sensors: Accelerometer for motion detection.
-🚀 Future Potential:
-In the future, I plan to add features like:
+### Core Components
 
-Cloud backup for logs and settings
-AI-based intruder detection
-Remote control via a companion app
-🎯 Conclusion:
-In summary, my mobile security app offers a proactive and customizable solution to protect users’ devices and personal safety. It combines theft deterrence, real-time alerts, and user-centric controls into one seamless experience.
+```
+src/
+├── components/          # Reusable UI components
+├── screens/            # Main application screens
+├── hooks/              # Custom React hooks
+├── utils/              # Utility functions
+├── services/           # External service integrations
+├── context/            # React Context providers
+├── navigation/         # Navigation configuration
+└── types/              # TypeScript type definitions
+```
 
-Thank you for your time, and I look forward to any feedback or suggestions to improve my project.
+## 🚀 Getting Started
 
-Patches: 
-    @voximplant/react-native-foreground-service
-    change compile sdk version to 35 
-    remove buildToolsVersion
+### Prerequisites
+
+- Node.js 18+ and npm/yarn
+- React Native CLI
+- Android Studio with SDK
+- Java Development Kit (JDK) 11+
+- Firebase project setup
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/sermadahmad/SmartSecuritySystem.git
+   cd SmartSecuritySystem
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Install iOS dependencies** (if targeting iOS)
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+4. **Firebase Configuration**
+   - Create a Firebase project
+   - Download `google-services.json` and place in `android/app/`
+   - Download `GoogleService-Info.plist` and place in `ios/` (for iOS)
+   - Update Firebase configuration in the app
+
+5. **Android Setup**
+   ```bash
+   npx react-native run-android
+   ```
+
+### 🔧 Configuration
+
+#### Environment Variables
+Create a `.env` file in the root directory:
+
+```env
+FIREBASE_API_KEY=your_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+NOTIFICATION_API_URL=your_backend_api_url
+```
+
+#### Permissions
+The app requires the following permissions:
+- Camera access
+- Location access (foreground and background)
+- Microphone access
+- External storage access
+- Foreground service
+
+## 📖 Usage
+
+### Basic Setup
+
+1. **Create Account**: Register with email/password or social login
+2. **Add Emergency Contacts**: Configure up to 5 emergency contacts
+3. **Customize Settings**: 
+   - Set trigger delays (lock delay, alarm delay)
+   - Choose alarm sounds and volume
+   - Configure notification preferences
+4. **Activate Security**: Toggle security monitoring on/off
+
+### Security Workflow
+
+1. **Device Placement**: Place phone on a stable surface
+2. **Motion Detection**: App detects when device becomes stationary
+3. **Lock Detection**: Monitors device lock status
+4. **Trigger Conditions**: Security activates if device is moved while locked
+5. **Response Actions**:
+   - Play customizable alarm
+   - Capture photos from both cameras
+   - Get current GPS location
+   - Send alerts to emergency contacts
+   - Log security event
+
+### 🎛️ Customization Options
+
+| Setting | Description | Options |
+|---------|-------------|---------|
+| Lock Delay | Time before security activates | 0-60 seconds |
+| Alarm Delay | Time before alarm triggers | 0-30 seconds |
+| Alarm Sound | Notification sound | 7 built-in sounds |
+| Alarm Volume | Sound intensity | 0-100% |
+| Alarm Duration | How long alarm plays | 5s - Infinite |
+| Location Sharing | Include GPS in alerts | On/Off |
+| Photo Capture | Include photos in alerts | On/Off |
+
+## 🔧 Advanced Features
+
+### Background Processing
+- Utilizes foreground services for continuous monitoring
+- Background timers for detection logic
+- Optimized battery usage
+
+### Security Event Logging
+- Detailed event tracking with timestamps
+- Photo storage and management
+- Export capabilities for security reports
+
+### Emergency Notifications
+- Real-time email alerts to contacts
+- Location sharing with Google Maps links
+- Photo attachments in notifications
+
+## 🛠️ Development
+
+### Building for Production
+
+```bash
+# Android Release Build
+cd android
+./gradlew assembleRelease
+
+# Generate Signed APK
+./gradlew bundleRelease
+```
+
+### Testing
+
+```bash
+# Run unit tests
+npm test
+
+# Run integration tests
+npm run test:integration
+
+# Check code coverage
+npm run test:coverage
+```
+
+### Code Quality
+
+```bash
+# Lint code
+npm run lint
+
+# Format code
+npm run format
+
+# Type checking
+npm run type-check
+```
+
+## 📱 Screenshots
+
+| Home Screen | Security Settings | Event Logs | Contact Management |
+|-------------|-------------------|------------|-------------------|
+| ![Home](docs/screenshots/home.png) | ![Settings](docs/screenshots/settings.png) | ![Logs](docs/screenshots/events.png) | ![Contacts](docs/screenshots/contacts.png) |
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Sermad Ahmad**
+- GitHub: [@sermadahmad](https://github.com/sermadahmad)
+- Email: your.email@example.com
+- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourusername)
+
+## 🙏 Acknowledgments
+
+- React Native community for excellent documentation
+- Firebase team for robust backend services
+- Contributors and testers who helped improve the app
+
+## 🐛 Known Issues & Troubleshooting
+
+### Common Issues
+
+1. **Camera not working in background**
+   - Ensure `android:foregroundServiceType="camera"` is set in AndroidManifest.xml
+   - Check battery optimization settings
+
+2. **Location not updating**
+   - Verify location permissions are granted
+   - Check if background location access is enabled
+
+3. **Notifications not sending**
+   - Verify Firebase configuration
+   - Check internet connectivity
+   - Ensure notification API is accessible
+
+### Support
+
+For support, please create an issue on GitHub or contact the development team.
+
+## 🗺️ Roadmap
+
+### Version 2.0 (Planned)
+- [ ] iOS support
+- [ ] Face detection integration
+- [ ] Cloud backup for settings
+- [ ] Remote device control
+- [ ] AI-based threat detection
+- [ ] Multi-language support
+- [ ] Dark mode theme
+
+### Version 1.5 (In Progress)
+- [x] Enhanced camera capture in background
+- [x] Improved battery optimization
+- [ ] Better error handling
+- [ ] Performance optimizations
+
+## 🔧 Technical Notes
+
+### Known Patches Required
+
+The following patches are required for proper functionality:
+
+#### @voximplant/react-native-foreground-service
+- Change compile SDK version to 35
+- Remove buildToolsVersion from build.gradle
+
+### Android Manifest Requirements
+
+Ensure the following configurations in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+<service
+  android:name=".SecurityCameraService"
+  android:exported="false"
+  android:enabled="true"
+  android:foregroundServiceType="camera" />
+```
+
+---
+
+*Made with ❤️ by Sermad Ahmad - Final Year Capstone Project*
